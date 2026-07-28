@@ -1,0 +1,65 @@
+datasource db {
+  provider = "sqlite"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Usuario {
+  id       String  @id @default(uuid())
+  nome     String
+  email    String  @unique
+  senha    String
+  turmas   Turma[]
+}
+
+model Turma {
+  id         String      @id @default(uuid())
+  nome       String
+  codigo     String
+  semestre   String
+  usuarioId  String
+  professor  Usuario     @relation(fields: [usuarioId], references: [id])
+  alunos     Aluno[]
+  avaliacoes Avaliacao[]
+}
+
+model Aluno {
+  id         String      @id @default(uuid())
+  nome       String
+  matricula  String      @unique
+  email      String
+  turmas     Turma[]
+  avaliacoes Avaliacao[]
+}
+
+model BancoQuestao {
+  id        String    @id @default(uuid())
+  titulo    String
+  questoes  Questao[]
+}
+
+model Questao {
+  id         String       @id @default(uuid())
+  tipo       String       // "DISCURSIVA" ou "MULTIPLA_ESCOLHA"
+  enunciado  String
+  peso       Float        @default(1.0)
+  gabarito   String
+  bancoId    String
+  banco      BancoQuestao @relation(fields: [bancoId], references: [id])
+  avaliacoes Avaliacao[]  // Relacionamento N:M
+}
+
+model Avaliacao {
+  id             String    @id @default(uuid())
+  titulo         String
+  tipo           String    // "PROVA" ou "LISTA"
+  dataInicio     DateTime
+  dataTermino    DateTime
+  ordemAleatoria  Boolean   @default(false)
+  turmaId        String
+  turma          Turma     @relation(fields: [turmaId], references: [id])
+  alunos         Aluno[]
+  questoes       Questao[] // Relacionamento N:M
+}

@@ -1,0 +1,30 @@
+# PostgreSQL para desenvolvimento local.
+#
+#   docker compose up -d      sobe o banco
+#   docker compose down       para o banco (preserva os dados)
+#   docker compose down -v    para o banco e apaga os dados
+#
+# As credenciais vem do .env, lido automaticamente pelo Docker Compose.
+
+services:
+  db:
+    image: postgres:17-alpine
+    container_name: provius-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - '5432:5432'
+    volumes:
+      - provius-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      # Evita rodar migrations enquanto o Postgres ainda inicializa.
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  provius-pgdata:

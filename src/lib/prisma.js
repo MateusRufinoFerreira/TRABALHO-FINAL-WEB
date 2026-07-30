@@ -1,7 +1,19 @@
 import { PrismaClient } from '@prisma/client';
+import { PrismaPg } from '@prisma/adapter-pg';
 
-const globalForPrisma = global;
+// O Prisma 7 exige um driver adapter para provedores SQL: `new PrismaClient()`
+// sem adapter lanca erro.
+function criarPrismaClient() {
+  const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
+  return new PrismaClient({ adapter });
+}
 
-export const prisma = globalForPrisma.prisma || new PrismaClient();
+// Instancia unica por processo. Sem o cache no globalThis, o hot reload do
+// `next dev` abriria um novo pool de conexoes a cada alteracao de arquivo.
+const globalParaPrisma = globalThis;
 
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
+export const prisma = globalParaPrisma.prismaGlobal ?? criarPrismaClient();
+
+if (process.env.NODE_ENV !== 'production') {
+  globalParaPrisma.prismaGlobal = prisma;
+}

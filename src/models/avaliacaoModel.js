@@ -36,4 +36,32 @@ export const AvaliacaoModel = {
       },
     });
   },
+
+  // Avaliacoes das turmas do professor. O filtro por turma e opcional.
+  async listarPorProfessor(usuarioId, { turmaId } = {}) {
+    return prisma.avaliacao.findMany({
+      where: {
+        turma: { usuarioId },
+        ...(turmaId ? { turmaId } : {}),
+      },
+      orderBy: { dataInicio: 'asc' },
+      include: {
+        turma: { select: { id: true, nome: true, codigo: true } },
+        _count: { select: { alunos: true, questoes: true } },
+      },
+    });
+  },
+
+  // Avaliacao completa, com participantes e questoes. Inclui o usuarioId da
+  // turma para o controller poder verificar a propriedade.
+  async buscarPorId(id) {
+    return prisma.avaliacao.findUnique({
+      where: { id },
+      include: {
+        turma: { select: { id: true, nome: true, codigo: true, usuarioId: true } },
+        alunos: { orderBy: { nome: 'asc' } },
+        questoes: { orderBy: { createdAt: 'asc' } },
+      },
+    });
+  },
 };

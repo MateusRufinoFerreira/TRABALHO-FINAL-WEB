@@ -217,9 +217,9 @@ Validações: `tipo` ∈ {`DISCURSIVA`, `MULTIPLA_ESCOLHA`} e `peso` numérico p
 
 | Método | Rota | Protegida | Descrição | Status |
 |---|---|---|---|---|
-| `GET` | `/api/avaliacoes` | sim | lista avaliações (filtro opcional `?turmaId=`) | **F16** |
-| `POST` | `/api/avaliacoes` | sim | cria e agenda uma avaliação | existe · refatorada na **F02** |
-| `GET` | `/api/avaliacoes/[id]` | sim | avaliação com participantes e questões | **F16** |
+| `GET` | `/api/avaliacoes` | sim | lista avaliações das turmas do professor (filtro opcional `?turmaId=`) | implementado |
+| `POST` | `/api/avaliacoes` | sim | cria e agenda uma avaliação | implementado |
+| `GET` | `/api/avaliacoes/[id]` | sim | avaliação com participantes e questões | implementado |
 
 ### `POST /api/avaliacoes`
 

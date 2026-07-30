@@ -146,4 +146,55 @@ export const AvaliacaoController = {
       return falha(ERRO.INTERNO, 'Erro ao agendar a avaliacao.');
     }
   },
+
+  async listarAvaliacoes(professorId, filtros) {
+    const { turmaId } = filtros ?? {};
+
+    try {
+      // Se uma turma foi informada, ela precisa pertencer ao professor. Sem esta
+      // checagem, passar o id de uma turma alheia listaria as avaliacoes dela.
+      if (turmaId) {
+        const acesso = await garantirTurmaDoProfessor(professorId, turmaId);
+        if (!acesso.ok) return acesso;
+      }
+
+      return sucesso(await AvaliacaoModel.listarPorProfessor(professorId, { turmaId }));
+    } catch (erro) {
+      console.error('[listarAvaliacoes]', erro);
+      return falha(ERRO.INTERNO, 'Erro ao listar as avaliacoes.');
+    }
+  },
+
+  async buscarAvaliacao(professorId, id) {
+    if (!textoPreenchido(id)) {
+      return falha(ERRO.VALIDACAO, 'O id da avaliacao e obrigatorio.');
+    }
+
+    try {
+      const avaliacao = await AvaliacaoModel.buscarPorId(id);
+
+      // A avaliacao pertence ao professor por meio da turma. Inexistente e
+      // alheia devolvem a mesma resposta, para nao revelar quais ids existem.
+      if (!avaliacao || avaliacao.turma.usuarioId !== professorId) {
+        return falha(ERRO.NAO_ENCONTRADO, 'Avaliacao nao encontrada.');
+      }
+
+      // O embaralhamento acontece na LEITURA, nao na persistencia: a tabela de
+      // juncao implicita nao guarda posicao (ver docs/MER.md). Consequencia
+      // deliberada: cada consulta devolve uma ordem diferente, o que serve ao
+      // proposito de evitar cola entre alunos.
+      if (avaliacao.ordemAleatoria) {
+        avaliacao.questoes = embaralhar(avaliacao.questoes);
+      }
+
+      // O usuarioId da turma foi carregado apenas para a checagem acima e nao
+      // precisa vazar na resposta.
+      delete avaliacao.turma.usuarioId;
+
+      return sucesso(avaliacao);
+    } catch (erro) {
+      console.error('[buscarAvaliacao]', erro);
+      return falha(ERRO.INTERNO, 'Erro ao buscar a avaliacao.');
+    }
+  },
 };

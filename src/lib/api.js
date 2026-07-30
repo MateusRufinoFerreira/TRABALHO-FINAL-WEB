@@ -53,3 +53,16 @@ export async function api(caminho, { metodo = 'GET', corpo } = {}) {
 
   return dados;
 }
+
+// Encerra a sessao nos dois canais: o cookie httpOnly precisa ser expirado pelo
+// servidor, e o localStorage e limpo aqui. Ignora falha de rede para que o
+// usuario consiga sair mesmo com a API indisponivel.
+export async function sair() {
+  try {
+    await fetch('/api/auth/logout', { method: 'POST' });
+  } catch {
+    // segue para a limpeza local de qualquer forma
+  } finally {
+    encerrarSessao();
+  }
+}

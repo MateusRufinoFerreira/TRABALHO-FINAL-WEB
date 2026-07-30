@@ -135,9 +135,9 @@ do token, para que ninguém crie turma no nome de outro professor.
 
 | Método | Rota | Protegida | Descrição | Status |
 |---|---|---|---|---|
-| `GET` | `/api/turmas/[id]/alunos` | sim | lista os alunos da turma | **F09** |
-| `POST` | `/api/turmas/[id]/alunos` | sim | matricula um aluno na turma | **F09** |
-| `DELETE` | `/api/turmas/[id]/alunos/[alunoId]` | sim | remove o aluno da turma | **F09** |
+| `GET` | `/api/turmas/[id]/alunos` | sim | lista os alunos da turma | implementado |
+| `POST` | `/api/turmas/[id]/alunos` | sim | matricula um aluno na turma | implementado |
+| `DELETE` | `/api/turmas/[id]/alunos/[alunoId]` | sim | remove o aluno da turma | implementado |
 
 As rotas são aninhadas em `turmas` porque um aluno só é gerenciado no contexto de
 uma turma.

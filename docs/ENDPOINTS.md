@@ -190,8 +190,8 @@ preservado, pois ele pode estar matriculado em outras turmas.
 
 | Método | Rota | Protegida | Descrição | Status |
 |---|---|---|---|---|
-| `GET` | `/api/questoes` | sim | lista questões (filtro opcional `?bancoId=`) | **F14** |
-| `POST` | `/api/questoes` | sim | cria uma questão em um banco | **F14** |
+| `GET` | `/api/questoes` | sim | lista questões dos bancos do professor (filtro opcional `?bancoId=`) | implementado |
+| `POST` | `/api/questoes` | sim | cria uma questão em um banco | implementado |
 
 ### `POST /api/questoes`
 

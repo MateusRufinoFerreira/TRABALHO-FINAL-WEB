@@ -1,5 +1,10 @@
+// Plataforma de Gerenciamento de Avaliacoes (Provius)
+//
+// A URL de conexao nao fica neste arquivo: no Prisma 7 ela e definida em
+// prisma.config.ts, que le DATABASE_URL do .env.
+
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
 }
 
 generator client {
@@ -7,59 +12,77 @@ generator client {
 }
 
 model Usuario {
-  id       String  @id @default(uuid())
-  nome     String
-  email    String  @unique
-  senha    String
-  turmas   Turma[]
+  id        String   @id @default(uuid())
+  nome      String
+  email     String   @unique
+  senha     String // hash bcrypt
+  createdAt DateTime @default(now())
+
+  turmas Turma[]
 }
 
 model Turma {
-  id         String      @id @default(uuid())
-  nome       String
-  codigo     String
-  semestre   String
-  usuarioId  String
-  professor  Usuario     @relation(fields: [usuarioId], references: [id])
+  id        String   @id @default(uuid())
+  nome      String
+  codigo    String
+  semestre  String
+  createdAt DateTime @default(now())
+
+  usuarioId String
+  professor Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
   alunos     Aluno[]
   avaliacoes Avaliacao[]
 }
 
 model Aluno {
-  id         String      @id @default(uuid())
-  nome       String
-  matricula  String      @unique
-  email      String
+  id        String   @id @default(uuid())
+  nome      String
+  matricula String   @unique
+  email     String
+  createdAt DateTime @default(now())
+
   turmas     Turma[]
   avaliacoes Avaliacao[]
 }
 
 model BancoQuestao {
-  id        String    @id @default(uuid())
+  id        String   @id @default(uuid())
   titulo    String
-  questoes  Questao[]
+  createdAt DateTime @default(now())
+
+  questoes Questao[]
 }
 
 model Questao {
-  id         String       @id @default(uuid())
-  tipo       String       // "DISCURSIVA" ou "MULTIPLA_ESCOLHA"
-  enunciado  String
-  peso       Float        @default(1.0)
-  gabarito   String
-  bancoId    String
-  banco      BancoQuestao @relation(fields: [bancoId], references: [id])
-  avaliacoes Avaliacao[]  // Relacionamento N:M
+  id        String   @id @default(uuid())
+  tipo      String // DISCURSIVA | MULTIPLA_ESCOLHA
+  enunciado String
+  peso      Float    @default(1.0)
+  gabarito  String
+  createdAt DateTime @default(now())
+
+  bancoId String
+  banco   BancoQuestao @relation(fields: [bancoId], references: [id], onDelete: Cascade)
+
+  avaliacoes Avaliacao[]
 }
 
 model Avaliacao {
-  id             String    @id @default(uuid())
+  id             String   @id @default(uuid())
   titulo         String
-  tipo           String    // "PROVA" ou "LISTA"
+  tipo           String // PROVA | LISTA
   dataInicio     DateTime
   dataTermino    DateTime
-  ordemAleatoria  Boolean   @default(false)
-  turmaId        String
-  turma          Turma     @relation(fields: [turmaId], references: [id])
-  alunos         Aluno[]
-  questoes       Questao[] // Relacionamento N:M
+  // A relacao N:M com Questao e implicita e sua tabela de juncao guarda apenas
+  // as duas chaves estrangeiras, sem coluna de posicao. Por isso a ordem fixa
+  // corresponde a ordem de criacao e o embaralhamento e feito no backend.
+  ordemAleatoria Boolean  @default(false)
+  createdAt      DateTime @default(now())
+
+  turmaId String
+  turma   Turma  @relation(fields: [turmaId], references: [id], onDelete: Cascade)
+
+  alunos   Aluno[]
+  questoes Questao[]
 }

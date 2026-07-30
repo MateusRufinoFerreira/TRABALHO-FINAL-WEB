@@ -1,33 +1,30 @@
-import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
+import { AuthController } from '@/controllers/authController';
+import { lerCorpo, responder, respostaJsonInvalido } from '@/lib/http';
 
-export async function POST(req) {
-  try {
-    const { email, senha } = await req.json();
+// CAMADA DE ROTA (fina)
 
-    const usuario = await prisma.usuario.findUnique({ where: { email } });
-    if (!usuario) {
-      return NextResponse.json({ error: 'Usuário não encontrado' }, { status: 401 });
-    }
+const UM_DIA_EM_SEGUNDOS = 60 * 60 * 24;
 
-    const senhaValida = await bcrypt.compare(senha, usuario.senha);
-    if (!senhaValida) {
-      return NextResponse.json({ error: 'Senha incorreta' }, { status: 401 });
-    }
+export async function POST(request) {
+  const { ok, corpo } = await lerCorpo(request);
 
-    const token = jwt.sign(
-      { userId: usuario.id, email: usuario.email },
-      process.env.JWT_SECRET || 'chave_secreta_padrao',
-      { expiresIn: '1d' }
-    );
+  if (!ok) return respostaJsonInvalido();
 
-    const response = NextResponse.json({ message: 'Login realizado com sucesso' });
-    response.cookies.set('token', token, { httpOnly: true, path: '/' });
+  const resultado = await AuthController.autenticar(corpo);
+  const resposta = responder(resultado, 200);
 
-    return response;
-  } catch (error) {
-    return NextResponse.json({ error: 'Erro interno no servidor' }, { status: 500 });
+  if (resultado.ok) {
+    // O token tambem vai no corpo da resposta (ver authController), porque o
+    // front-end precisa le-lo para montar o cabecalho Authorization. Este cookie
+    // e um extra: sendo httpOnly, o JavaScript nao o acessa, o que protege
+    // contra XSS mas nao serve para o cabecalho.
+    resposta.cookies.set('token', resultado.dados.token, {
+      httpOnly: true,
+      sameSite: 'lax',
+      path: '/',
+      maxAge: UM_DIA_EM_SEGUNDOS,
+    });
   }
+
+  return resposta;
 }

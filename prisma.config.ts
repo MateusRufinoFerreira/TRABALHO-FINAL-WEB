@@ -7,6 +7,9 @@ export default defineConfig({
   schema: "prisma/schema.prisma",
   migrations: {
     path: "prisma/migrations",
+    // Comando executado por `prisma db seed`. No Prisma 7 o seed nao roda
+    // automaticamente apos as migrations: precisa ser chamado explicitamente.
+    seed: "node prisma/seed.js",
   },
   datasource: {
     url: process.env["DATABASE_URL"],

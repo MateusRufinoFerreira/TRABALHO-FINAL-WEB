@@ -5,7 +5,7 @@ Modelo de dados da Plataforma de Gerenciamento de Avaliações (Provius).
 - **Banco:** PostgreSQL 17
 - **ORM:** Prisma 7
 - **Fonte da verdade:** [`prisma/schema.prisma`](../prisma/schema.prisma)
-- **Migration:** `prisma/migrations/20260730193651_init/`
+- **Migrations:** `20260730193651_init`, `20260730233205_banco_questao_por_professor`
 
 ---
 
@@ -14,6 +14,7 @@ Modelo de dados da Plataforma de Gerenciamento de Avaliações (Provius).
 ```mermaid
 erDiagram
     USUARIO ||--o{ TURMA : "leciona"
+    USUARIO ||--o{ BANCO_QUESTAO : "mantem"
     TURMA ||--o{ AVALIACAO : "agenda"
     BANCO_QUESTAO ||--o{ QUESTAO : "contem"
     TURMA }o--o{ ALUNO : "matricula"
@@ -49,6 +50,7 @@ erDiagram
         uuid id PK
         string titulo
         datetime createdAt
+        uuid usuarioId FK
     }
 
     QUESTAO {
@@ -99,6 +101,11 @@ de vínculo (`connectOrCreate`), não de criação.
 Existe para permitir **reaproveitamento**: as questões vivem no banco, não na
 avaliação, e por isso a mesma questão pode compor várias avaliações.
 
+Pertence a um professor. O schema original não tinha esse vínculo, o que deixava
+os bancos globais — qualquer professor veria e editaria os bancos dos demais,
+inconsistente com o tratamento dado às turmas. Corrigido na migration
+`20260730233205_banco_questao_por_professor`.
+
 ### `Questao` — item avaliativo
 
 Pertence a exatamente um banco. O campo `tipo` distingue questões discursivas de
@@ -120,6 +127,7 @@ entidade central do sistema: combina **participantes** (alunos) e **conteúdo**
 | Relacionamento | Cardinalidade | Regra ao apagar o pai |
 |---|---|---|
 | `Usuario` → `Turma` | um professor leciona várias turmas | `Cascade` |
+| `Usuario` → `BancoQuestao` | um professor mantém vários bancos | `Cascade` |
 | `Turma` → `Avaliacao` | uma turma tem várias avaliações | `Cascade` |
 | `BancoQuestao` → `Questao` | um banco contém várias questões | `Cascade` |
 

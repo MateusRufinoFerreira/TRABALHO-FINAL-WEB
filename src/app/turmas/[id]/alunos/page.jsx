@@ -19,6 +19,9 @@ export default function PaginaGerenciarAlunos() {
   const [salvando, setSalvando] = useState(false);
   // Guarda o id em remocao para desabilitar apenas aquele botao.
   const [removendo, setRemovendo] = useState(null);
+  // Id do aluno aguardando confirmacao. Como e um id e nao um booleano, apenas
+  // uma linha entra em modo de confirmacao por vez.
+  const [confirmando, setConfirmando] = useState(null);
 
   function tratarErro(e) {
     if (e instanceof ErroDeApi && e.status === 401) {
@@ -87,6 +90,8 @@ export default function PaginaGerenciarAlunos() {
     }
   }
 
+  // Chamada apenas depois da confirmacao: remover matricula por um clique
+  // acidental seria destrutivo e nao ha como desfazer pela interface.
   async function handleRemover(aluno) {
     setErro(null);
     setRemovendo(aluno.id);
@@ -99,6 +104,7 @@ export default function PaginaGerenciarAlunos() {
       tratarErro(e);
     } finally {
       setRemovendo(null);
+      setConfirmando(null);
     }
   }
 
@@ -214,14 +220,37 @@ export default function PaginaGerenciarAlunos() {
                     </p>
                   </div>
 
-                  <button
-                    type="button"
-                    onClick={() => handleRemover(aluno)}
-                    disabled={removendo === aluno.id}
-                    className="self-start rounded-md border border-red-200 px-3 py-1.5 text-sm font-medium text-red-700 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50 sm:self-auto"
-                  >
-                    {removendo === aluno.id ? 'Removendo...' : 'Remover'}
-                  </button>
+                  {confirmando === aluno.id ? (
+                    // Confirmacao em duas etapas, no lugar de um dialogo nativo:
+                    // mantem o contexto da linha e nao bloqueia a pagina.
+                    <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
+                      <span className="text-sm text-gray-600">Remover da turma?</span>
+                      <button
+                        type="button"
+                        onClick={() => handleRemover(aluno)}
+                        disabled={removendo === aluno.id}
+                        className="rounded-md bg-red-600 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        {removendo === aluno.id ? 'Removendo...' : 'Confirmar'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setConfirmando(null)}
+                        disabled={removendo === aluno.id}
+                        className="rounded-md border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        Cancelar
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setConfirmando(aluno.id)}
+                      className="self-start rounded-md border border-red-200 px-3 py-1.5 text-sm font-medium text-red-700 transition hover:bg-red-50 sm:self-auto"
+                    >
+                      Remover
+                    </button>
+                  )}
                 </li>
               ))}
             </ul>

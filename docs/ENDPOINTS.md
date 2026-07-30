@@ -170,9 +170,9 @@ preservado, pois ele pode estar matriculado em outras turmas.
 
 | Método | Rota | Protegida | Descrição | Status |
 |---|---|---|---|---|
-| `GET` | `/api/bancos` | sim | lista os bancos com a contagem de questões | **F12** |
-| `POST` | `/api/bancos` | sim | cria um banco | **F12** |
-| `GET` | `/api/bancos/[id]` | sim | banco específico com suas questões | **F12** |
+| `GET` | `/api/bancos` | sim | lista os bancos do professor com a contagem de questões | implementado |
+| `POST` | `/api/bancos` | sim | cria um banco | implementado |
+| `GET` | `/api/bancos/[id]` | sim | banco específico com suas questões | implementado |
 
 ### `POST /api/bancos`
 

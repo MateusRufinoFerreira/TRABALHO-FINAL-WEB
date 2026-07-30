@@ -19,6 +19,7 @@ model Usuario {
   createdAt DateTime @default(now())
 
   turmas Turma[]
+  bancos BancoQuestao[]
 }
 
 model Turma {
@@ -50,6 +51,11 @@ model BancoQuestao {
   id        String   @id @default(uuid())
   titulo    String
   createdAt DateTime @default(now())
+
+  // Cada banco pertence a um professor, como as turmas. Sem este vinculo
+  // qualquer professor veria e editaria os bancos dos demais.
+  usuarioId String
+  professor Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
 
   questoes Questao[]
 }

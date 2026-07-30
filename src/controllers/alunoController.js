@@ -1,5 +1,5 @@
 import { AlunoModel } from '@/models/alunoModel';
-import { TurmaModel } from '@/models/turmaModel';
+import { garantirTurmaDoProfessor } from '@/controllers/acessoTurma';
 import { ERRO, falha, sucesso } from '@/lib/resultado';
 
 // CAMADA DE REGRAS DE NEGOCIO
@@ -8,24 +8,6 @@ const FORMATO_EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function textoPreenchido(valor) {
   return typeof valor === 'string' && valor.trim() !== '';
-}
-
-// Todas as operacoes sao feitas no contexto de uma turma, e a turma precisa
-// pertencer ao professor autenticado. Centralizar a checagem evita repeti-la.
-async function garantirTurmaDoProfessor(professorId, turmaId) {
-  if (!textoPreenchido(turmaId)) {
-    return falha(ERRO.VALIDACAO, 'O id da turma e obrigatorio.');
-  }
-
-  const turma = await TurmaModel.buscarPorId(turmaId);
-
-  // Turma inexistente e turma alheia devolvem a mesma resposta, para nao
-  // revelar quais ids existem.
-  if (!turma || turma.usuarioId !== professorId) {
-    return falha(ERRO.NAO_ENCONTRADO, 'Turma nao encontrada.');
-  }
-
-  return sucesso(turma);
 }
 
 export const AlunoController = {

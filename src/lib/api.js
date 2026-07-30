@@ -45,8 +45,13 @@ export async function api(caminho, { metodo = 'GET', corpo } = {}) {
   const dados = await lerJson(resposta);
 
   if (!resposta.ok) {
-    // Token invalido ou expirado: a sessao local nao vale mais nada.
-    if (resposta.status === 401) encerrarSessao();
+    // Token invalido ou expirado: encerra a sessao nos DOIS canais.
+    //
+    // Limpar apenas o localStorage nao basta. O cookie httpOnly continuaria
+    // valido, e o proxy — que protege as paginas pelo cookie — devolveria quem
+    // fosse redirecionado para /login de volta ao dashboard, num vaivem em que o
+    // usuario ve a interface mas todo fetch falha com 401.
+    if (resposta.status === 401) await sair();
 
     throw new ErroDeApi(dados?.erro ?? 'Nao foi possivel completar a operacao.', resposta.status);
   }
@@ -54,7 +59,7 @@ export async function api(caminho, { metodo = 'GET', corpo } = {}) {
   return dados;
 }
 
-// Encerra a sessao nos dois canais: o cookie httpOnly precisa ser expirado pelo
+// Encerra a sessao nos dois canais: o cookie httpOnly so pode ser expirado pelo
 // servidor, e o localStorage e limpo aqui. Ignora falha de rede para que o
 // usuario consiga sair mesmo com a API indisponivel.
 export async function sair() {

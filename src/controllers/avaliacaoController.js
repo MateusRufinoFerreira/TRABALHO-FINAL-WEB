@@ -1,5 +1,6 @@
 import { AvaliacaoModel } from '@/models/avaliacaoModel';
 import { TurmaModel } from '@/models/turmaModel';
+import { garantirTurmaDoProfessor } from '@/controllers/acessoTurma';
 import { ERRO, falha, sucesso } from '@/lib/resultado';
 
 // CAMADA DE REGRAS DE NEGOCIO
@@ -48,7 +49,9 @@ function embaralhar(itens) {
 }
 
 export const AvaliacaoController = {
-  async agendarAvaliacao(dados) {
+  // Recebe o professorId do token: sem ele, qualquer professor autenticado
+  // poderia agendar avaliacao na turma de outro.
+  async agendarAvaliacao(professorId, dados) {
     const {
       titulo,
       tipo,
@@ -97,11 +100,9 @@ export const AvaliacaoController = {
 
     try {
       // --- Regras de consistencia entre entidades ----------------------------
-      const turma = await TurmaModel.buscarPorId(turmaId);
-
-      if (!turma) {
-        return falha(ERRO.NAO_ENCONTRADO, 'Turma nao encontrada.');
-      }
+      // A turma precisa existir E pertencer ao professor autenticado.
+      const acesso = await garantirTurmaDoProfessor(professorId, turmaId);
+      if (!acesso.ok) return acesso;
 
       // Um participante da avaliacao precisa estar matriculado na turma dela.
       // Sem esta checagem seria possivel vincular um aluno de outra turma.

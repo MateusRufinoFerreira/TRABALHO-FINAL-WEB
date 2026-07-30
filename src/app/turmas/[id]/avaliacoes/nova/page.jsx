@@ -27,7 +27,11 @@ export default function PaginaNovaAvaliacao() {
   const router = useRouter();
 
   const [turma, setTurma] = useState(null);
+  const [alunos, setAlunos] = useState([]);
   const [campos, setCampos] = useState(CAMPOS_INICIAIS);
+  // Set em vez de array: a checagem de "esta selecionado" acontece a cada
+  // renderizacao, para cada aluno. Com Set e O(1); com array seria O(n).
+  const [participantes, setParticipantes] = useState(() => new Set());
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState(null);
   const [salvando, setSalvando] = useState(false);
@@ -45,8 +49,17 @@ export default function PaginaNovaAvaliacao() {
 
     async function carregar() {
       try {
-        const dados = await api(`/api/turmas/${turmaId}`);
-        if (ativo) setTurma(dados);
+        const [dadosTurma, dadosAlunos] = await Promise.all([
+          api(`/api/turmas/${turmaId}`),
+          api(`/api/turmas/${turmaId}/alunos`),
+        ]);
+
+        if (!ativo) return;
+        setTurma(dadosTurma);
+        setAlunos(dadosAlunos);
+        // Por padrao a avaliacao e para a turma inteira: o caso comum nao exige
+        // marcar aluno por aluno, e desmarcar excecoes e mais rapido.
+        setParticipantes(new Set(dadosAlunos.map((aluno) => aluno.id)));
       } catch (e) {
         if (ativo) tratarErro(e);
       } finally {
@@ -66,6 +79,23 @@ export default function PaginaNovaAvaliacao() {
     setCampos((anteriores) => ({ ...anteriores, [nome]: valor }));
   }
 
+  function alternarParticipante(alunoId) {
+    // Um Set novo a cada alteracao: mutar o Set existente nao mudaria a
+    // referencia, e o React nao re-renderizaria.
+    setParticipantes((anteriores) => {
+      const proximo = new Set(anteriores);
+      if (proximo.has(alunoId)) proximo.delete(alunoId);
+      else proximo.add(alunoId);
+      return proximo;
+    });
+  }
+
+  function alternarTodos() {
+    setParticipantes((anteriores) =>
+      anteriores.size === alunos.length ? new Set() : new Set(alunos.map((a) => a.id))
+    );
+  }
+
   async function handleSalvar(evento) {
     evento.preventDefault();
 
@@ -81,6 +111,7 @@ export default function PaginaNovaAvaliacao() {
           dataInicio: paraIso(campos.dataInicio),
           dataTermino: paraIso(campos.dataTermino),
           turmaId,
+          alunoIds: [...participantes],
         },
       });
 
@@ -179,6 +210,62 @@ export default function PaginaNovaAvaliacao() {
                 />
               </div>
             </div>
+
+            <section className="mt-8 border-t border-gray-200 pt-6">
+              <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+                <h2 className="font-semibold text-gray-800">
+                  Participantes{' '}
+                  <span className="font-normal text-gray-500">
+                    ({participantes.size} de {alunos.length})
+                  </span>
+                </h2>
+
+                {alunos.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={alternarTodos}
+                    className="text-sm font-medium text-blue-600 hover:underline"
+                  >
+                    {participantes.size === alunos.length ? 'Desmarcar todos' : 'Marcar todos'}
+                  </button>
+                )}
+              </div>
+
+              {alunos.length === 0 ? (
+                <p className="rounded-md border border-dashed border-gray-300 px-4 py-6 text-center text-sm text-gray-600">
+                  Esta turma não tem alunos matriculados.{' '}
+                  <Link
+                    href={`/turmas/${turmaId}/alunos`}
+                    className="font-medium text-blue-600 hover:underline"
+                  >
+                    Gerenciar alunos
+                  </Link>
+                </p>
+              ) : (
+                <ul className="divide-y divide-gray-100 rounded-md border border-gray-200">
+                  {alunos.map((aluno) => (
+                    <li key={aluno.id}>
+                      {/* O label envolve o checkbox: clicar em qualquer ponto da
+                          linha alterna a selecao, area de clique maior. */}
+                      <label className="flex cursor-pointer items-center gap-3 px-4 py-3 hover:bg-gray-50">
+                        <input
+                          type="checkbox"
+                          checked={participantes.has(aluno.id)}
+                          onChange={() => alternarParticipante(aluno.id)}
+                          className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        />
+                        <span className="flex-1">
+                          <span className="block text-sm font-medium text-gray-800">{aluno.nome}</span>
+                          <span className="block text-xs text-gray-500">
+                            {aluno.matricula} • {aluno.email}
+                          </span>
+                        </span>
+                      </label>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
 
             <div className="mt-6 flex flex-col gap-3 sm:flex-row">
               <button

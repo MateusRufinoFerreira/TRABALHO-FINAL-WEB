@@ -39,3 +39,10 @@ export function respostaJsonInvalido() {
     { status: 400 }
   );
 }
+
+export function respostaNaoAutenticado() {
+  return NextResponse.json(
+    { erro: 'Token ausente, invalido ou expirado.' },
+    { status: 401 }
+  );
+}

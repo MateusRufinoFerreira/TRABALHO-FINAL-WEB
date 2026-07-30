@@ -106,9 +106,9 @@ professor. `turmasRecentes` usa `createdAt` para ordenar por recência.
 
 | Método | Rota | Protegida | Descrição | Status |
 |---|---|---|---|---|
-| `GET` | `/api/turmas` | sim | lista as turmas do professor logado | **F06** |
-| `POST` | `/api/turmas` | sim | cria uma turma | **F06** |
-| `GET` | `/api/turmas/[id]` | sim | turma específica com suas avaliações | **F06** |
+| `GET` | `/api/turmas` | sim | lista as turmas do professor logado | implementado |
+| `POST` | `/api/turmas` | sim | cria uma turma | implementado |
+| `GET` | `/api/turmas/[id]` | sim | turma específica com suas avaliações | implementado |
 
 ### `POST /api/turmas`
 

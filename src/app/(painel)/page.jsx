@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { api } from '@/lib/api';
 import { useErroDeApi } from '@/hooks/useErroDeApi';
+import SaudacaoProfessor from '@/components/SaudacaoProfessor';
 
 function Indicador({ rotulo, valor, descricao, cor }) {
   return (
@@ -44,6 +45,8 @@ export default function PaginaVisaoGeral() {
 
   return (
     <>
+    <SaudacaoProfessor />
+
     <header className="mb-8">
       <h1 className="text-2xl font-bold text-gray-800">Visão Geral</h1>
       <p className="text-sm text-gray-600">Resumo do semestre e atalhos rápidos.</p>

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { api } from '@/lib/api';
 import { useErroDeApi } from '@/hooks/useErroDeApi';
+import SaudacaoProfessor from '@/components/SaudacaoProfessor';
 
 export default function PaginaTurmas() {
 
@@ -38,6 +39,8 @@ export default function PaginaTurmas() {
 
   return (
     <>
+    <SaudacaoProfessor />
+
     <header className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div>
         <Link href="/" className="text-sm text-blue-600 hover:underline">

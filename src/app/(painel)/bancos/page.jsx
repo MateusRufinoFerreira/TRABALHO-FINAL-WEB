@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { api } from '@/lib/api';
 import { useErroDeApi } from '@/hooks/useErroDeApi';
+import SaudacaoProfessor from '@/components/SaudacaoProfessor';
 
 export default function PaginaBancos() {
 
@@ -56,6 +57,8 @@ export default function PaginaBancos() {
 
   return (
     <>
+    <SaudacaoProfessor />
+
     <header className="mb-6">
       <Link href="/" className="text-sm text-blue-600 hover:underline">
         ← Visão Geral

@@ -81,7 +81,7 @@ route.js  ->  controller  ->  model  ->  Prisma  ->  PostgreSQL
 
 | Método | Rota | Protegida | Descrição | Status |
 |---|---|---|---|---|
-| `GET` | `/api/dashboard` | sim | estatísticas da visão geral | **F20** |
+| `GET` | `/api/dashboard` | sim | estatísticas da visão geral | implementado |
 
 ### `GET /api/dashboard`
 
@@ -91,14 +91,21 @@ route.js  ->  controller  ->  model  ->  Prisma  ->  PostgreSQL
 {
   "alunosAtivos": 17,
   "avaliacoesCriadas": 2,
+  "turmasTotal": 4,
   "turmasRecentes": [
-    { "id": "uuid", "nome": "Laboratório de Programação I", "codigo": "LPI", "semestre": "2026.1" }
+    {
+      "id": "uuid",
+      "nome": "Laboratório de Programação I",
+      "codigo": "LPI",
+      "semestre": "2026.1",
+      "_count": { "alunos": 12, "avaliacoes": 2 }
+    }
   ]
 }
 ```
 
-`alunosAtivos` é a contagem de alunos distintos somando todas as turmas do
-professor. `turmasRecentes` usa `createdAt` para ordenar por recência.
+`alunosAtivos` conta alunos **distintos**: um aluno matriculado em três turmas conta
+uma única vez. `turmasRecentes` traz as 3 mais recentes por `createdAt`.
 
 ---
 

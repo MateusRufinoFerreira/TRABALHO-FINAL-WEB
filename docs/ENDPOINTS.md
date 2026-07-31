@@ -50,7 +50,33 @@ route.js  ->  controller  ->  model  ->  Prisma  ->  PostgreSQL
 
 | Método | Rota | Protegida | Descrição | Status |
 |---|---|---|---|---|
-| `POST` | `/api/auth/login` | não | autentica e devolve o token JWT | existe · ajuste na **F03** |
+| `POST` | `/api/auth/registro` | não | cria uma conta de professor e já autentica | implementado |
+| `POST` | `/api/auth/login` | não | autentica e devolve o token JWT | implementado |
+| `POST` | `/api/auth/logout` | não | expira o cookie de sessão | implementado |
+
+### `POST /api/auth/registro`
+
+**Requisição**
+
+```json
+{ "nome": "Thiago Soares Marques", "email": "thiago@uepb.edu.br", "senha": "senha_forte" }
+```
+
+**Resposta `201`** — mesmo formato do login, para que o professor entre direto após
+o cadastro:
+
+```json
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "usuario": { "id": "uuid", "nome": "Thiago Soares Marques", "email": "thiago@uepb.edu.br" }
+}
+```
+
+**Erros:** `400` nome vazio, e-mail inválido ou senha com menos de 6 caracteres ·
+`409` e-mail já cadastrado · `500`
+
+A senha é gravada apenas como hash bcrypt e nunca retorna na resposta. O e-mail é
+normalizado para minúsculas.
 
 ### `POST /api/auth/login`
 
@@ -263,7 +289,8 @@ criação (ver a justificativa em [`MER.md`](./MER.md#implicação-de-projeto-or
 
 | # | Método | Rota | Feature |
 |---|---|---|---|
-| 1 | `POST` | `/api/auth/login` | F03 |
+| 1 | `POST` | `/api/auth/registro` | — |
+| 2 | `POST` | `/api/auth/login` | F03 |
 | 2 | `GET` | `/api/dashboard` | F20 |
 | 3 | `GET` | `/api/turmas` | F06 |
 | 4 | `POST` | `/api/turmas` | F06 |

@@ -6,36 +6,34 @@ import Link from 'next/link';
 import { api } from '@/lib/api';
 import { salvarSessao } from '@/lib/sessao';
 
-export default function PaginaLogin() {
+const SENHA_MINIMA = 6;
+
+export default function PaginaCadastro() {
   const router = useRouter();
 
-  // Campos controlados: o estado do React e a fonte da verdade do formulario.
+  const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [erro, setErro] = useState(null);
   const [enviando, setEnviando] = useState(false);
 
-  async function handleEntrar(evento) {
-    // Sem isto o navegador recarregaria a pagina no submit.
+  async function handleCadastrar(evento) {
     evento.preventDefault();
 
     setErro(null);
     setEnviando(true);
 
     try {
-      const { token, usuario } = await api('/api/auth/login', {
+      const { token, usuario } = await api('/api/auth/registro', {
         metodo: 'POST',
-        corpo: { email, senha },
+        corpo: { nome, email, senha },
       });
 
+      // A API ja devolve a sessao: o professor entra direto, sem passar pelo login.
       salvarSessao({ token, usuario });
-
-      // replace em vez de push: evita que o botao "voltar" retorne ao login
-      // depois de autenticado.
       router.replace('/');
     } catch (e) {
       setErro(e.message);
-    } finally {
       setEnviando(false);
     }
   }
@@ -51,11 +49,11 @@ export default function PaginaLogin() {
         </header>
 
         <form
-          onSubmit={handleEntrar}
+          onSubmit={handleCadastrar}
           className="rounded-lg bg-white p-6 shadow-xl sm:p-8"
           noValidate
         >
-          <h2 className="mb-6 text-xl font-semibold text-gray-800">Acessar o sistema</h2>
+          <h2 className="mb-6 text-xl font-semibold text-gray-800">Criar conta de professor</h2>
 
           {erro && (
             <p
@@ -65,6 +63,22 @@ export default function PaginaLogin() {
               {erro}
             </p>
           )}
+
+          <div className="mb-4">
+            <label htmlFor="nome" className="mb-1 block text-sm font-medium text-gray-700">
+              Nome
+            </label>
+            <input
+              id="nome"
+              type="text"
+              value={nome}
+              onChange={(e) => setNome(e.target.value)}
+              autoComplete="name"
+              required
+              placeholder="Thiago Soares Marques"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+            />
+          </div>
 
           <div className="mb-4">
             <label htmlFor="email" className="mb-1 block text-sm font-medium text-gray-700">
@@ -91,25 +105,27 @@ export default function PaginaLogin() {
               type="password"
               value={senha}
               onChange={(e) => setSenha(e.target.value)}
-              autoComplete="current-password"
+              autoComplete="new-password"
               required
               className="w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
             />
+            <p className="mt-1 text-xs text-gray-500">
+              Mínimo de {SENHA_MINIMA} caracteres.
+            </p>
           </div>
 
           <button
             type="submit"
-            // Evita envio duplicado por clique repetido enquanto a requisicao corre.
             disabled={enviando}
             className="w-full rounded-md bg-blue-600 px-4 py-2 font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300"
           >
-            {enviando ? 'Entrando...' : 'Entrar'}
+            {enviando ? 'Criando conta...' : 'Criar conta'}
           </button>
 
           <p className="mt-6 text-center text-sm text-gray-600">
-            Não tem conta?{' '}
-            <Link href="/cadastro" className="font-medium text-blue-600 hover:underline">
-              Criar conta
+            Já tem conta?{' '}
+            <Link href="/login" className="font-medium text-blue-600 hover:underline">
+              Entrar
             </Link>
           </p>
         </form>

@@ -17,8 +17,8 @@ import { verificarToken } from '@/lib/jwt';
 // O localStorage nao acompanha a navegacao direta (digitar a URL), logo nao ha
 // como proteger uma pagina com ele.
 
-const API_PUBLICA = ['/api/auth/login', '/api/auth/logout'];
-const PAGINAS_PUBLICAS = ['/login'];
+const API_PUBLICA = ['/api/auth/login', '/api/auth/logout', '/api/auth/registro'];
+const PAGINAS_PUBLICAS = ['/login', '/cadastro'];
 
 function tokenDoCabecalho(request) {
   const cabecalho = request.headers.get('authorization') ?? '';

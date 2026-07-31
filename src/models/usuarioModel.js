@@ -15,4 +15,13 @@ export const UsuarioModel = {
       select: { id: true, nome: true, email: true },
     });
   },
+
+  // Recebe a senha JA com hash: gerar o hash e regra de negocio, nao acesso a
+  // dados. O select impede que o hash volte na resposta.
+  async criar({ nome, email, senha }) {
+    return prisma.usuario.create({
+      data: { nome, email, senha },
+      select: { id: true, nome: true, email: true },
+    });
+  },
 };

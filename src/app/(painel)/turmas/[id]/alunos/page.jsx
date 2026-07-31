@@ -15,6 +15,11 @@ export default function PaginaGerenciarAlunos() {
   const { erro, setErro, tratarErro } = useErroDeApi();
   const [alunos, setAlunos] = useState([]);
   const [campos, setCampos] = useState(CAMPOS_VAZIOS);
+  // Aluno ja cadastrado com a matricula digitada, ou null. Quando preenchido, o
+  // nome e o e-mail do formulario passam a ser somente leitura, porque a API
+  // reaproveita o registro existente e descarta o que for digitado.
+  const [jaCadastrado, setJaCadastrado] = useState(null);
+  const [consultando, setConsultando] = useState(false);
   const [carregando, setCarregando] = useState(true);
   const [salvando, setSalvando] = useState(false);
   // Guarda o id em remocao para desabilitar apenas aquele botao.
@@ -56,6 +61,45 @@ export default function PaginaGerenciarAlunos() {
     setCampos((anteriores) => ({ ...anteriores, [nome]: valor }));
   }
 
+  function limparConsulta() {
+    setJaCadastrado(null);
+    setCampos(CAMPOS_VAZIOS);
+  }
+
+  // Disparada ao sair do campo de matricula, e nao a cada tecla: evita uma
+  // requisicao por caractere digitado.
+  async function handleVerificarMatricula() {
+    const matricula = campos.matricula.trim();
+
+    if (!matricula) {
+      setJaCadastrado(null);
+      return;
+    }
+
+    // Ja consultada: nao repete a requisicao.
+    if (jaCadastrado?.matricula === matricula) return;
+
+    setErro(null);
+    setConsultando(true);
+
+    try {
+      const { existe, aluno } = await api(`/api/alunos?matricula=${encodeURIComponent(matricula)}`);
+
+      if (existe) {
+        setJaCadastrado(aluno);
+        // Mostra os dados reais que serao usados, em vez de deixar o professor
+        // digitar valores que a API vai ignorar.
+        setCampos({ nome: aluno.nome, matricula: aluno.matricula, email: aluno.email });
+      } else {
+        setJaCadastrado(null);
+      }
+    } catch (e) {
+      tratarErro(e);
+    } finally {
+      setConsultando(false);
+    }
+  }
+
   async function handleMatricular(evento) {
     evento.preventDefault();
 
@@ -73,7 +117,7 @@ export default function PaginaGerenciarAlunos() {
       setAlunos((anteriores) =>
         [...anteriores, aluno].sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'))
       );
-      setCampos(CAMPOS_VAZIOS);
+      limparConsulta();
     } catch (e) {
       tratarErro(e);
     } finally {
@@ -126,21 +170,6 @@ export default function PaginaGerenciarAlunos() {
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <div>
-          <label htmlFor="nome" className="mb-1 block text-sm font-medium text-gray-700">
-            Nome
-          </label>
-          <input
-            id="nome"
-            type="text"
-            value={campos.nome}
-            onChange={(e) => atualizarCampo('nome', e.target.value)}
-            required
-            placeholder="Maria Silva"
-            className="w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
-          />
-        </div>
-
-        <div>
           <label htmlFor="matricula" className="mb-1 block text-sm font-medium text-gray-700">
             Matrícula
           </label>
@@ -149,9 +178,31 @@ export default function PaginaGerenciarAlunos() {
             type="text"
             value={campos.matricula}
             onChange={(e) => atualizarCampo('matricula', e.target.value)}
+            onBlur={handleVerificarMatricula}
             required
             placeholder="2026001"
             className="w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+          />
+          <p className="mt-1 text-xs text-gray-500">
+            {consultando ? 'Verificando matrícula...' : 'Verificada ao sair do campo.'}
+          </p>
+        </div>
+
+        <div>
+          <label htmlFor="nome" className="mb-1 block text-sm font-medium text-gray-700">
+            Nome
+          </label>
+          <input
+            id="nome"
+            type="text"
+            value={campos.nome}
+            onChange={(e) => atualizarCampo('nome', e.target.value)}
+            readOnly={!!jaCadastrado}
+            required
+            placeholder="Maria Silva"
+            className={`w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 ${
+              jaCadastrado ? 'cursor-not-allowed bg-gray-100' : ''
+            }`}
           />
         </div>
 
@@ -164,12 +215,35 @@ export default function PaginaGerenciarAlunos() {
             type="email"
             value={campos.email}
             onChange={(e) => atualizarCampo('email', e.target.value)}
+            readOnly={!!jaCadastrado}
             required
             placeholder="maria@aluno.uepb.edu.br"
-            className="w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+            className={`w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 ${
+              jaCadastrado ? 'cursor-not-allowed bg-gray-100' : ''
+            }`}
           />
         </div>
       </div>
+
+      {jaCadastrado && (
+        <div
+          role="status"
+          className="mt-4 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800"
+        >
+          <p>
+            A matrícula <strong>{jaCadastrado.matricula}</strong> já está cadastrada como{' '}
+            <strong>{jaCadastrado.nome}</strong>. Ao matricular, este aluno será vinculado a esta
+            turma — nome e e-mail permanecem os já registrados.
+          </p>
+          <button
+            type="button"
+            onClick={limparConsulta}
+            className="mt-2 text-sm font-medium text-amber-900 underline hover:no-underline"
+          >
+            Limpar e digitar outra matrícula
+          </button>
+        </div>
+      )}
 
       <button
         type="submit"

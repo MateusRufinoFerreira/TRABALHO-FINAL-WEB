@@ -7,7 +7,6 @@ import { useErroDeApi } from '@/hooks/useErroDeApi';
 import SaudacaoProfessor from '@/components/SaudacaoProfessor';
 
 export default function PaginaBancos() {
-
   const [bancos, setBancos] = useState([]);
   const { erro, setErro, tratarErro } = useErroDeApi();
   const [titulo, setTitulo] = useState('');
@@ -45,7 +44,7 @@ export default function PaginaBancos() {
     try {
       const banco = await api('/api/bancos', { metodo: 'POST', corpo: { titulo } });
 
-      // Insere no topo, acompanhando a ordenacao por createdAt desc do servidor.
+      // Acompanha a ordenacao createdAt desc do servidor.
       setBancos((anteriores) => [banco, ...anteriores]);
       setTitulo('');
     } catch (e) {
@@ -78,8 +77,6 @@ export default function PaginaBancos() {
       </p>
     )}
 
-    {/* Um banco tem um unico campo: um formulario inline evita uma pagina
-        inteira para preencher um titulo. */}
     <form onSubmit={handleCriar} className="mb-8 rounded-lg bg-white p-6 shadow-sm" noValidate>
       <h2 className="mb-4 font-semibold text-gray-800">Novo Banco</h2>
 

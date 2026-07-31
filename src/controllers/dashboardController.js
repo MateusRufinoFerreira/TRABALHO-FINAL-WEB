@@ -1,8 +1,6 @@
 import { DashboardModel } from '@/models/dashboardModel';
 import { ERRO, falha, sucesso } from '@/lib/resultado';
 
-// CAMADA DE REGRAS DE NEGOCIO
-
 export const DashboardController = {
   async obterVisaoGeral(professorId) {
     try {

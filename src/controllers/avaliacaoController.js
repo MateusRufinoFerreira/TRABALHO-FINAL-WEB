@@ -3,22 +3,15 @@ import { TurmaModel } from '@/models/turmaModel';
 import { garantirTurmaDoProfessor } from '@/controllers/acessoTurma';
 import { ERRO, falha, sucesso } from '@/lib/resultado';
 
-// CAMADA DE REGRAS DE NEGOCIO
-// Nao importa o Prisma (isso e papel do model) e nao importa NextResponse
-// (isso e papel da rota). Valida a entrada, aplica as regras e devolve um
-// resultado descrito em termos de dominio.
-
 const TIPOS_VALIDOS = ['PROVA', 'LISTA'];
 
-// Codigo do Prisma para "registro obrigatorio nao encontrado", devolvido quando
-// um connect aponta para um id inexistente.
+// Prisma: registro obrigatorio nao encontrado.
 const REGISTRO_NAO_ENCONTRADO = 'P2025';
 
 function textoPreenchido(valor) {
   return typeof valor === 'string' && valor.trim() !== '';
 }
 
-// Converte a data recebida em JSON (string ISO) para Date, ou null se invalida.
 function converterData(valor) {
   if (typeof valor !== 'string' && !(valor instanceof Date)) return null;
 
@@ -31,12 +24,11 @@ function listaDeIds(valor) {
   if (!Array.isArray(valor)) return null;
   if (!valor.every(textoPreenchido)) return null;
 
-  // Remove duplicatas: o connect do Prisma falharia ao vincular o mesmo id duas vezes.
+  // O connect falharia com o mesmo id repetido.
   return [...new Set(valor)];
 }
 
-// Fisher-Yates. Substitui o `sort(() => Math.random() - 0.5)` usado antes, que
-// produzia distribuicao enviesada e alterava o array original.
+// Fisher-Yates: permutacao uniforme, sobre uma copia.
 function embaralhar(itens) {
   const copia = [...itens];
 
@@ -49,8 +41,6 @@ function embaralhar(itens) {
 }
 
 export const AvaliacaoController = {
-  // Recebe o professorId do token: sem ele, qualquer professor autenticado
-  // poderia agendar avaliacao na turma de outro.
   async agendarAvaliacao(professorId, dados) {
     const {
       titulo,
@@ -63,7 +53,6 @@ export const AvaliacaoController = {
       questaoIds,
     } = dados ?? {};
 
-    // --- Validacao de formato -------------------------------------------------
     if (!textoPreenchido(titulo)) {
       return falha(ERRO.VALIDACAO, 'O campo "titulo" e obrigatorio.');
     }
@@ -99,13 +88,10 @@ export const AvaliacaoController = {
     }
 
     try {
-      // --- Regras de consistencia entre entidades ----------------------------
-      // A turma precisa existir E pertencer ao professor autenticado.
       const acesso = await garantirTurmaDoProfessor(professorId, turmaId);
       if (!acesso.ok) return acesso;
 
-      // Um participante da avaliacao precisa estar matriculado na turma dela.
-      // Sem esta checagem seria possivel vincular um aluno de outra turma.
+      // Participante precisa estar matriculado na turma da avaliacao.
       if (alunos.length > 0) {
         const matriculados = await TurmaModel.listarIdsDeAlunos(turmaId);
         const forasteiros = alunos.filter((id) => !matriculados.includes(id));
@@ -129,15 +115,13 @@ export const AvaliacaoController = {
         questaoIds: questoes,
       });
 
-      // Ordem aleatoria e decidida na entrega, nao na persistencia: a tabela de
-      // juncao implicita nao guarda posicao (ver docs/MER.md).
+      // A tabela de juncao implicita nao guarda posicao: a ordem sai na leitura.
       if (avaliacao.ordemAleatoria) {
         avaliacao.questoes = embaralhar(avaliacao.questoes);
       }
 
       return sucesso(avaliacao);
     } catch (erro) {
-      // Ocorre quando algum id de questao informado nao existe.
       if (erro?.code === REGISTRO_NAO_ENCONTRADO) {
         return falha(ERRO.VALIDACAO, 'Uma ou mais questoes informadas nao existem.');
       }
@@ -151,8 +135,6 @@ export const AvaliacaoController = {
     const { turmaId } = filtros ?? {};
 
     try {
-      // Se uma turma foi informada, ela precisa pertencer ao professor. Sem esta
-      // checagem, passar o id de uma turma alheia listaria as avaliacoes dela.
       if (turmaId) {
         const acesso = await garantirTurmaDoProfessor(professorId, turmaId);
         if (!acesso.ok) return acesso;
@@ -173,22 +155,16 @@ export const AvaliacaoController = {
     try {
       const avaliacao = await AvaliacaoModel.buscarPorId(id);
 
-      // A avaliacao pertence ao professor por meio da turma. Inexistente e
-      // alheia devolvem a mesma resposta, para nao revelar quais ids existem.
+      // Inexistente e alheia respondem igual, para nao revelar quais ids existem.
       if (!avaliacao || avaliacao.turma.usuarioId !== professorId) {
         return falha(ERRO.NAO_ENCONTRADO, 'Avaliacao nao encontrada.');
       }
 
-      // O embaralhamento acontece na LEITURA, nao na persistencia: a tabela de
-      // juncao implicita nao guarda posicao (ver docs/MER.md). Consequencia
-      // deliberada: cada consulta devolve uma ordem diferente, o que serve ao
-      // proposito de evitar cola entre alunos.
       if (avaliacao.ordemAleatoria) {
         avaliacao.questoes = embaralhar(avaliacao.questoes);
       }
 
-      // O usuarioId da turma foi carregado apenas para a checagem acima e nao
-      // precisa vazar na resposta.
+      // Carregado apenas para a checagem acima.
       delete avaliacao.turma.usuarioId;
 
       return sucesso(avaliacao);

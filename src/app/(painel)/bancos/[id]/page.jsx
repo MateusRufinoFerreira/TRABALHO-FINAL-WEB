@@ -25,12 +25,10 @@ export default function PaginaBanco() {
   const [questoes, setQuestoes] = useState([]);
   const [bancoDestino, setBancoDestino] = useState(id);
   const [campos, setCampos] = useState(CAMPOS_INICIAIS);
-  // O formulario nasce oculto: a tela e para consultar as questoes do banco, e
-  // o cadastro e uma acao que o professor pede explicitamente.
+  // A tela e para consultar; o cadastro e pedido explicitamente pelo professor.
   const [mostrandoFormulario, setMostrandoFormulario] = useState(false);
   const [carregando, setCarregando] = useState(true);
   const [salvando, setSalvando] = useState(false);
-  // Usado para levar o foco ao primeiro campo quando o formulario abre.
   const refEnunciado = useRef(null);
 
   useEffect(() => {
@@ -38,8 +36,6 @@ export default function PaginaBanco() {
 
     async function carregar() {
       try {
-        // O banco atual (com suas questoes) e a lista de bancos para o combobox
-        // de destino. Requisicoes independentes, portanto em paralelo.
         const [detalhe, todos] = await Promise.all([api(`/api/bancos/${id}`), api('/api/bancos')]);
 
         if (!ativo) return;
@@ -69,8 +65,7 @@ export default function PaginaBanco() {
   function abrirFormulario() {
     setErro(null);
     setMostrandoFormulario(true);
-    // Sem o foco, o professor clica no botao e precisa clicar de novo para
-    // comecar a digitar. O timeout espera o campo existir no DOM.
+    // O timeout espera o campo existir no DOM.
     setTimeout(() => refEnunciado.current?.focus(), 0);
   }
 
@@ -92,14 +87,10 @@ export default function PaginaBanco() {
         corpo: { ...campos, bancoId: bancoDestino },
       });
 
-      // Limpa os campos mas mantem o formulario aberto: cadastrar questoes de um
-      // banco costuma ser feito em sequencia, e fechar a cada salvamento
-      // obrigaria a reabrir para cada questao.
       setCampos(CAMPOS_INICIAIS);
       refEnunciado.current?.focus();
 
-      // Se o professor escolheu outro banco de destino, a questao nao pertence a
-      // esta tela: navega para o banco que a recebeu, em vez de sumir com ela.
+      // Destino diferente: navega para o banco que recebeu a questao.
       if (bancoDestino !== id) {
         router.push(`/bancos/${bancoDestino}`);
         return;
@@ -230,8 +221,6 @@ export default function PaginaBanco() {
             </div>
 
             <div className="sm:col-span-3">
-              {/* O rotulo muda conforme o tipo: na discursiva o gabarito e a
-                  resposta esperada; na multipla escolha, a alternativa correta. */}
               <label htmlFor="gabarito" className="mb-1 block text-sm font-medium text-gray-700">
                 {multiplaEscolha ? 'Alternativa correta' : 'Gabarito'}
               </label>

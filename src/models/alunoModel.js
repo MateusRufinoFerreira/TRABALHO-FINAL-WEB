@@ -1,7 +1,5 @@
 import { prisma } from '@/lib/prisma';
 
-// CAMADA DE ACESSO A DADOS
-
 export const AlunoModel = {
   async listarPorTurma(turmaId) {
     return prisma.aluno.findMany({
@@ -14,9 +12,6 @@ export const AlunoModel = {
     return prisma.aluno.findUnique({ where: { matricula } });
   },
 
-  // A matricula e unica no sistema inteiro: um aluno em varias turmas e UM
-  // registro vinculado a todas. Por isso connectOrCreate, e nao create — que
-  // falharia com violacao de unicidade para quem ja existe.
   async matricularNaTurma(turmaId, { nome, matricula, email }) {
     return prisma.aluno.upsert({
       where: { matricula },
@@ -25,8 +20,7 @@ export const AlunoModel = {
     });
   },
 
-  // Remove apenas o vinculo com a turma. O registro do aluno e preservado,
-  // porque ele pode estar matriculado em outras turmas.
+  // Desfaz apenas o vinculo: o aluno pode estar em outras turmas.
   async desvincularDaTurma(turmaId, alunoId) {
     return prisma.aluno.update({
       where: { id: alunoId },

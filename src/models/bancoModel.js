@@ -1,10 +1,7 @@
 import { prisma } from '@/lib/prisma';
 
-// CAMADA DE ACESSO A DADOS
-
 export const BancoModel = {
-  // Bancos do professor, mais recentes primeiro. O _count evita carregar as
-  // questoes inteiras so para exibir a quantidade na listagem.
+  // _count evita carregar as questoes so para exibir a quantidade.
   async listarPorProfessor(usuarioId) {
     return prisma.bancoQuestao.findMany({
       where: { usuarioId },
@@ -24,7 +21,6 @@ export const BancoModel = {
     return prisma.bancoQuestao.findUnique({ where: { id } });
   },
 
-  // Banco com suas questoes, para a tela de detalhe.
   async buscarDetalhadoPorId(id) {
     return prisma.bancoQuestao.findUnique({
       where: { id },

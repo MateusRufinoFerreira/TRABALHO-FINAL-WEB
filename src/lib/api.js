@@ -1,10 +1,5 @@
 import { encerrarSessao, obterToken } from '@/lib/sessao';
 
-// Ponto unico de comunicacao do front-end com a API.
-//
-// Centralizar aqui evita repetir o cabecalho Authorization em cada tela — o tipo
-// de repeticao onde se esquece de um lugar e o bug passa silencioso.
-
 export class ErroDeApi extends Error {
   constructor(mensagem, status) {
     super(mensagem);
@@ -17,7 +12,6 @@ async function lerJson(resposta) {
   try {
     return await resposta.json();
   } catch {
-    // Respostas sem corpo (ex.: 204) ou com corpo invalido.
     return null;
   }
 }
@@ -38,19 +32,12 @@ export async function api(caminho, { metodo = 'GET', corpo } = {}) {
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
     body: corpo ? JSON.stringify(corpo) : undefined,
-    // Dados de gestao mudam a cada requisicao: nunca servir do cache.
     cache: 'no-store',
   });
 
   const dados = await lerJson(resposta);
 
   if (!resposta.ok) {
-    // Token invalido ou expirado: encerra a sessao nos DOIS canais.
-    //
-    // Limpar apenas o localStorage nao basta. O cookie httpOnly continuaria
-    // valido, e o proxy — que protege as paginas pelo cookie — devolveria quem
-    // fosse redirecionado para /login de volta ao dashboard, num vaivem em que o
-    // usuario ve a interface mas todo fetch falha com 401.
     if (resposta.status === 401) await sair();
 
     throw new ErroDeApi(dados?.erro ?? 'Nao foi possivel completar a operacao.', resposta.status);
@@ -59,14 +46,10 @@ export async function api(caminho, { metodo = 'GET', corpo } = {}) {
   return dados;
 }
 
-// Encerra a sessao nos dois canais: o cookie httpOnly so pode ser expirado pelo
-// servidor, e o localStorage e limpo aqui. Ignora falha de rede para que o
-// usuario consiga sair mesmo com a API indisponivel.
 export async function sair() {
   try {
     await fetch('/api/auth/logout', { method: 'POST' });
   } catch {
-    // segue para a limpeza local de qualquer forma
   } finally {
     encerrarSessao();
   }

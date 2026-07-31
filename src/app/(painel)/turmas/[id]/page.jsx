@@ -19,8 +19,7 @@ function formatarData(iso) {
 }
 
 export default function PaginaTurma() {
-  // Em Client Component o id do segmento dinamico vem do useParams, e nao das
-  // props: no Next 16 o params das props e uma Promise.
+  // Em Client Component o id vem do useParams: nas props seria uma Promise.
   const { id } = useParams();
 
   const [turma, setTurma] = useState(null);

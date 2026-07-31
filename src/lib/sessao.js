@@ -1,14 +1,7 @@
-// Sessao do professor no navegador.
-//
-// O token e guardado no localStorage porque o front-end precisa le-lo para
-// montar o cabecalho "Authorization: Bearer". O cookie httpOnly definido pela
-// rota de login nao serve para isso: por ser httpOnly, o JavaScript nao o acessa.
-
 const CHAVE_TOKEN = 'provius.token';
 const CHAVE_USUARIO = 'provius.usuario';
 
-// Estas funcoes tambem sao importadas por modulos avaliados no servidor durante
-// o build, onde localStorage nao existe.
+// localStorage nao existe no servidor.
 function armazenamentoDisponivel() {
   return typeof window !== 'undefined' && window.localStorage;
 }
@@ -35,7 +28,6 @@ export function obterUsuario() {
   try {
     return JSON.parse(bruto);
   } catch {
-    // Conteudo corrompido nao deve derrubar a aplicacao.
     return null;
   }
 }

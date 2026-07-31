@@ -7,15 +7,11 @@ import { useErroDeApi } from '@/hooks/useErroDeApi';
 import SaudacaoProfessor from '@/components/SaudacaoProfessor';
 
 export default function PaginaTurmas() {
-
   const [turmas, setTurmas] = useState([]);
   const { erro, setErro, tratarErro } = useErroDeApi();
   const [carregando, setCarregando] = useState(true);
 
   useEffect(() => {
-    // Em desenvolvimento o React executa os efeitos duas vezes (StrictMode).
-    // A flag evita atualizar o estado de um componente ja desmontado, o que
-    // geraria aviso no console e, em navegacoes rapidas, dados desatualizados.
     let ativo = true;
 
     async function carregarTurmas() {
@@ -89,7 +85,6 @@ export default function PaginaTurmas() {
     {turmas.length > 0 && (
       <ul className="grid grid-cols-1 gap-4 md:grid-cols-2">
         {turmas.map((turma) => (
-          // A key precisa ser estavel e unica para o React reconciliar a lista.
           <li key={turma.id} className="rounded-lg bg-white p-6 shadow-sm transition hover:shadow-md">
             <h2 className="font-semibold text-gray-800">{turma.nome}</h2>
             <p className="text-sm text-gray-500">

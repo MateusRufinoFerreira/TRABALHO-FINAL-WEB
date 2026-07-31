@@ -2,9 +2,6 @@ import { AlunoController } from '@/controllers/alunoController';
 import { professorDaRequisicao } from '@/lib/autenticacao';
 import { lerCorpo, responder, respostaJsonInvalido, respostaNaoAutenticado } from '@/lib/http';
 
-// CAMADA DE ROTA (fina)
-// Aninhada em turmas porque um aluno so e gerenciado no contexto de uma turma.
-
 export async function GET(request, { params }) {
   const professor = professorDaRequisicao(request);
 

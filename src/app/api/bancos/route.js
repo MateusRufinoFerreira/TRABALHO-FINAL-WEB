@@ -2,8 +2,6 @@ import { BancoController } from '@/controllers/bancoController';
 import { professorDaRequisicao } from '@/lib/autenticacao';
 import { lerCorpo, responder, respostaJsonInvalido, respostaNaoAutenticado } from '@/lib/http';
 
-// CAMADA DE ROTA (fina)
-
 export async function GET(request) {
   const professor = professorDaRequisicao(request);
 

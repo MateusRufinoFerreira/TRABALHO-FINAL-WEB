@@ -2,16 +2,11 @@ import { AvaliacaoController } from '@/controllers/avaliacaoController';
 import { professorDaRequisicao } from '@/lib/autenticacao';
 import { lerCorpo, responder, respostaJsonInvalido, respostaNaoAutenticado } from '@/lib/http';
 
-// CAMADA DE ROTA (fina)
-// Recebe a requisicao, delega ao controller e traduz o resultado em resposta
-// HTTP. Nao contem regra de negocio nem acesso ao banco.
-
 export async function GET(request) {
   const professor = professorDaRequisicao(request);
 
   if (!professor) return respostaNaoAutenticado();
 
-  // Filtro opcional: /api/avaliacoes?turmaId=<uuid>
   const turmaId = request.nextUrl.searchParams.get('turmaId');
 
   return responder(await AvaliacaoController.listarAvaliacoes(professor.id, { turmaId }));

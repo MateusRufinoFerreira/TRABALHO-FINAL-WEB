@@ -11,8 +11,7 @@ const ITENS = [
   { rotulo: 'Banco de Questões', href: '/bancos' },
 ];
 
-// A raiz precisa de comparacao exata; as demais casam com as subrotas, para que
-// /turmas/nova tambem destaque "Minhas Turmas".
+// A raiz exige comparacao exata; as demais casam subrotas.
 function estaAtivo(pathname, href) {
   return href === '/' ? pathname === '/' : pathname.startsWith(href);
 }
@@ -24,7 +23,6 @@ export default function Sidebar() {
 
   async function handleSair() {
     setSaindo(true);
-    // Encerra os dois canais: cookie httpOnly no servidor e localStorage aqui.
     await sair();
     router.replace('/login');
   }

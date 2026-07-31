@@ -1,8 +1,6 @@
 import { TurmaModel } from '@/models/turmaModel';
 import { ERRO, falha, sucesso } from '@/lib/resultado';
 
-// CAMADA DE REGRAS DE NEGOCIO
-
 // Semestre no formato ano.periodo, ex.: "2026.1".
 const FORMATO_SEMESTRE = /^\d{4}\.[12]$/;
 
@@ -36,8 +34,7 @@ export const TurmaController = {
     }
 
     try {
-      // O professor vem do token, nunca do corpo da requisicao: caso contrario
-      // seria possivel criar turma no nome de outro professor.
+      // O dono vem do token, nunca do corpo.
       const turma = await TurmaModel.criar({
         nome: nome.trim(),
         codigo: codigo.trim().toUpperCase(),
@@ -60,9 +57,6 @@ export const TurmaController = {
     try {
       const turma = await TurmaModel.buscarDetalhadaPorId(id);
 
-      // Turma inexistente e turma de outro professor devolvem a MESMA resposta.
-      // Responder 403 no segundo caso confirmaria que aquele id existe, o que
-      // permitiria mapear as turmas alheias pelo id.
       if (!turma || turma.usuarioId !== professorId) {
         return falha(ERRO.NAO_ENCONTRADO, 'Turma nao encontrada.');
       }

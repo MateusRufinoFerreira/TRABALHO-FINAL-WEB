@@ -15,17 +15,13 @@ export default function PaginaGerenciarAlunos() {
   const { erro, setErro, tratarErro } = useErroDeApi();
   const [alunos, setAlunos] = useState([]);
   const [campos, setCampos] = useState(CAMPOS_VAZIOS);
-  // Aluno ja cadastrado com a matricula digitada, ou null. Quando preenchido, o
-  // nome e o e-mail do formulario passam a ser somente leitura, porque a API
-  // reaproveita o registro existente e descarta o que for digitado.
   const [jaCadastrado, setJaCadastrado] = useState(null);
   const [consultando, setConsultando] = useState(false);
   const [carregando, setCarregando] = useState(true);
   const [salvando, setSalvando] = useState(false);
   // Guarda o id em remocao para desabilitar apenas aquele botao.
   const [removendo, setRemovendo] = useState(null);
-  // Id do aluno aguardando confirmacao. Como e um id e nao um booleano, apenas
-  // uma linha entra em modo de confirmacao por vez.
+  // Guarda o id, nao um booleano: uma linha em confirmacao por vez.
   const [confirmando, setConfirmando] = useState(null);
 
   useEffect(() => {
@@ -33,7 +29,6 @@ export default function PaginaGerenciarAlunos() {
 
     async function carregar() {
       try {
-        // As duas requisicoes sao independentes: em paralelo em vez de em fila.
         const [dadosTurma, dadosAlunos] = await Promise.all([
           api(`/api/turmas/${turmaId}`),
           api(`/api/turmas/${turmaId}/alunos`),
@@ -66,8 +61,7 @@ export default function PaginaGerenciarAlunos() {
     setCampos(CAMPOS_VAZIOS);
   }
 
-  // Disparada ao sair do campo de matricula, e nao a cada tecla: evita uma
-  // requisicao por caractere digitado.
+  // No blur, nao a cada tecla: evitaria uma requisicao por caractere.
   async function handleVerificarMatricula() {
     const matricula = campos.matricula.trim();
 
@@ -76,7 +70,6 @@ export default function PaginaGerenciarAlunos() {
       return;
     }
 
-    // Ja consultada: nao repete a requisicao.
     if (jaCadastrado?.matricula === matricula) return;
 
     setErro(null);
@@ -87,8 +80,7 @@ export default function PaginaGerenciarAlunos() {
 
       if (existe) {
         setJaCadastrado(aluno);
-        // Mostra os dados reais que serao usados, em vez de deixar o professor
-        // digitar valores que a API vai ignorar.
+        // A API reaproveita o registro existente e ignora o que for digitado.
         setCampos({ nome: aluno.nome, matricula: aluno.matricula, email: aluno.email });
       } else {
         setJaCadastrado(null);
@@ -112,8 +104,7 @@ export default function PaginaGerenciarAlunos() {
         corpo: campos,
       });
 
-      // Insere o aluno devolvido pela API e mantem a ordenacao por nome usada
-      // pelo servidor, para a lista nao "pular" no proximo carregamento.
+      // Mantem a ordenacao por nome usada pelo servidor.
       setAlunos((anteriores) =>
         [...anteriores, aluno].sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'))
       );
@@ -125,8 +116,7 @@ export default function PaginaGerenciarAlunos() {
     }
   }
 
-  // Chamada apenas depois da confirmacao: remover matricula por um clique
-  // acidental seria destrutivo e nao ha como desfazer pela interface.
+  // Chamada apenas depois da confirmacao.
   async function handleRemover(aluno) {
     setErro(null);
     setRemovendo(aluno.id);
@@ -285,8 +275,6 @@ export default function PaginaGerenciarAlunos() {
               </div>
 
               {confirmando === aluno.id ? (
-                // Confirmacao em duas etapas, no lugar de um dialogo nativo:
-                // mantem o contexto da linha e nao bloqueia a pagina.
                 <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
                   <span className="text-sm text-gray-600">Remover da turma?</span>
                   <button

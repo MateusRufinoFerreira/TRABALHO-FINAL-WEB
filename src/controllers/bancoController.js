@@ -2,8 +2,6 @@ import { BancoModel } from '@/models/bancoModel';
 import { garantirBancoDoProfessor } from '@/controllers/acessoBanco';
 import { ERRO, falha, sucesso } from '@/lib/resultado';
 
-// CAMADA DE REGRAS DE NEGOCIO
-
 function textoPreenchido(valor) {
   return typeof valor === 'string' && valor.trim() !== '';
 }
@@ -26,7 +24,7 @@ export const BancoController = {
     }
 
     try {
-      // O dono vem do token, nunca do corpo da requisicao.
+      // O dono vem do token, nunca do corpo.
       const banco = await BancoModel.criar({
         titulo: titulo.trim(),
         usuarioId: professorId,

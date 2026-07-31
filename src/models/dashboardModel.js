@@ -1,16 +1,11 @@
 import { prisma } from '@/lib/prisma';
 
-// CAMADA DE ACESSO A DADOS
-
 const TURMAS_RECENTES = 3;
 
 export const DashboardModel = {
-  // As quatro consultas sao independentes: em paralelo em vez de em fila.
-  // Todas escopadas ao professor, direta ou indiretamente pela turma.
   async obterEstatisticas(usuarioId) {
     const [alunosAtivos, avaliacoesCriadas, turmasTotal, turmasRecentes] = await Promise.all([
-      // Alunos DISTINTOS: um aluno em tres turmas conta uma vez. O `some`
-      // resolve isso no banco, sem trazer os registros para somar em memoria.
+      // Alunos distintos: um aluno em tres turmas conta uma vez.
       prisma.aluno.count({ where: { turmas: { some: { usuarioId } } } }),
 
       prisma.avaliacao.count({ where: { turma: { usuarioId } } }),

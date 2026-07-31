@@ -2,8 +2,6 @@ import { AlunoModel } from '@/models/alunoModel';
 import { garantirTurmaDoProfessor } from '@/controllers/acessoTurma';
 import { ERRO, falha, sucesso } from '@/lib/resultado';
 
-// CAMADA DE REGRAS DE NEGOCIO
-
 const FORMATO_EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function textoPreenchido(valor) {
@@ -11,12 +9,6 @@ function textoPreenchido(valor) {
 }
 
 export const AlunoController = {
-  // Consulta se a matricula ja pertence a algum aluno do sistema.
-  //
-  // Existe porque a matricula e unica globalmente: ao matricular alguem ja
-  // cadastrado, o registro e reaproveitado e o nome digitado e DESCARTADO. Sem
-  // esta consulta, o professor digitaria um nome e veria outro na lista, sem
-  // entender o motivo.
   async consultarMatricula(matricula) {
     if (!textoPreenchido(matricula)) {
       return falha(ERRO.VALIDACAO, 'Informe a matricula a consultar.');
@@ -28,7 +20,6 @@ export const AlunoController = {
       // Nao encontrar nao e erro: e a resposta esperada para uma matricula nova.
       if (!aluno) return sucesso({ existe: false });
 
-      // Devolve apenas o necessario para preencher o formulario.
       return sucesso({
         existe: true,
         aluno: { nome: aluno.nome, matricula: aluno.matricula, email: aluno.email },
@@ -72,9 +63,6 @@ export const AlunoController = {
 
       const matriculaNormalizada = matricula.trim();
 
-      // Matricular duas vezes na mesma turma nao e erro do banco (o connect e
-      // idempotente), mas e erro de uso: o professor precisa saber que o aluno
-      // ja esta ali.
       const existente = await AlunoModel.buscarPorMatricula(matriculaNormalizada);
 
       if (existente && (await AlunoModel.estaNaTurma(turmaId, existente.id))) {

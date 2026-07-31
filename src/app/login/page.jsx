@@ -9,14 +9,12 @@ import { salvarSessao } from '@/lib/sessao';
 export default function PaginaLogin() {
   const router = useRouter();
 
-  // Campos controlados: o estado do React e a fonte da verdade do formulario.
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [erro, setErro] = useState(null);
   const [enviando, setEnviando] = useState(false);
 
   async function handleEntrar(evento) {
-    // Sem isto o navegador recarregaria a pagina no submit.
     evento.preventDefault();
 
     setErro(null);
@@ -30,8 +28,7 @@ export default function PaginaLogin() {
 
       salvarSessao({ token, usuario });
 
-      // replace em vez de push: evita que o botao "voltar" retorne ao login
-      // depois de autenticado.
+      // replace: o botao voltar nao retorna ao login.
       router.replace('/');
     } catch (e) {
       setErro(e.message);
@@ -99,7 +96,6 @@ export default function PaginaLogin() {
 
           <button
             type="submit"
-            // Evita envio duplicado por clique repetido enquanto a requisicao corre.
             disabled={enviando}
             className="w-full rounded-md bg-blue-600 px-4 py-2 font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300"
           >

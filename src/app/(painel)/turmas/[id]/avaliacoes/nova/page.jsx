@@ -13,9 +13,6 @@ const CAMPOS_INICIAIS = {
   dataTermino: '',
 };
 
-// O input datetime-local devolve "2026-08-10T14:00", sem fuso e sem segundos.
-// new Date() interpreta esse texto como hora LOCAL, que e o que o professor
-// digitou; toISOString converte para UTC, que e o formato aceito pela API.
 function paraIso(valorLocal) {
   if (!valorLocal) return '';
 
@@ -35,8 +32,7 @@ export default function PaginaNovaAvaliacao() {
   const [selecionadas, setSelecionadas] = useState(() => new Set());
   const [ordemAleatoria, setOrdemAleatoria] = useState(false);
   const [campos, setCampos] = useState(CAMPOS_INICIAIS);
-  // Set em vez de array: a checagem de "esta selecionado" acontece a cada
-  // renderizacao, para cada aluno. Com Set e O(1); com array seria O(n).
+  // Set: a checagem por aluno a cada render e O(1), contra O(n) de um array.
   const [participantes, setParticipantes] = useState(() => new Set());
   const [carregando, setCarregando] = useState(true);
   const [salvando, setSalvando] = useState(false);
@@ -49,8 +45,7 @@ export default function PaginaNovaAvaliacao() {
         const [dadosTurma, dadosAlunos, dadosQuestoes] = await Promise.all([
           api(`/api/turmas/${turmaId}`),
           api(`/api/turmas/${turmaId}/alunos`),
-          // Sem filtro de banco: a avaliacao pode combinar questoes de bancos
-          // diferentes, e o endpoint devolve o banco de origem de cada uma.
+          // Sem filtro: a avaliacao pode combinar questoes de bancos diferentes.
           api('/api/questoes'),
         ]);
 
@@ -58,8 +53,7 @@ export default function PaginaNovaAvaliacao() {
         setTurma(dadosTurma);
         setAlunos(dadosAlunos);
         setQuestoes(dadosQuestoes);
-        // Por padrao a avaliacao e para a turma inteira: o caso comum nao exige
-        // marcar aluno por aluno, e desmarcar excecoes e mais rapido.
+        // Por padrao a avaliacao vale para a turma inteira.
         setParticipantes(new Set(dadosAlunos.map((aluno) => aluno.id)));
       } catch (e) {
         if (ativo) tratarErro(e);
@@ -81,8 +75,7 @@ export default function PaginaNovaAvaliacao() {
   }
 
   function alternarParticipante(alunoId) {
-    // Um Set novo a cada alteracao: mutar o Set existente nao mudaria a
-    // referencia, e o React nao re-renderizaria.
+    // Set novo: mutar o existente manteria a referencia e nao re-renderizaria.
     setParticipantes((anteriores) => {
       const proximo = new Set(anteriores);
       if (proximo.has(alunoId)) proximo.delete(alunoId);
@@ -137,16 +130,13 @@ export default function PaginaNovaAvaliacao() {
     }
   }
 
-  // Valores derivados do estado: recalculados a cada renderizacao, sem estado
-  // duplicado que pudesse ficar dessincronizado.
   const bancosDisponiveis = [...new Map(questoes.map((q) => [q.banco.id, q.banco])).values()];
 
   const disponiveis = questoes.filter(
     (q) => !selecionadas.has(q.id) && (filtroBanco === 'TODOS' || q.banco.id === filtroBanco)
   );
 
-  // Mantem a ordem createdAt asc devolvida pelo servidor, que e a ordem em que a
-  // avaliacao sera efetivamente exibida quando a ordem for fixa.
+  // Ordem createdAt asc do servidor, que e a ordem exibida quando fixa.
   const montadas = questoes.filter((q) => selecionadas.has(q.id));
 
   const pesoTotal = montadas.reduce((soma, q) => soma + q.peso, 0);
@@ -273,8 +263,6 @@ export default function PaginaNovaAvaliacao() {
             <ul className="divide-y divide-gray-100 rounded-md border border-gray-200">
               {alunos.map((aluno) => (
                 <li key={aluno.id}>
-                  {/* O label envolve o checkbox: clicar em qualquer ponto da
-                      linha alterna a selecao, area de clique maior. */}
                   <label className="flex cursor-pointer items-center gap-3 px-4 py-3 hover:bg-gray-50">
                     <input
                       type="checkbox"

@@ -1,10 +1,7 @@
 import { prisma } from '@/lib/prisma';
 
-// CAMADA DE ACESSO A DADOS
-
 export const QuestaoModel = {
-  // Questoes dos bancos do professor. O filtro por banco e opcional; sem ele,
-  // devolve todas as questoes disponiveis para montar avaliacoes.
+  // Sem filtro, devolve todas as questoes disponiveis para montar avaliacoes.
   async listarPorProfessor(usuarioId, { bancoId } = {}) {
     return prisma.questao.findMany({
       where: {

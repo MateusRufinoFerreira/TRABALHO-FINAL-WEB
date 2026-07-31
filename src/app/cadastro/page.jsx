@@ -29,7 +29,6 @@ export default function PaginaCadastro() {
         corpo: { nome, email, senha },
       });
 
-      // A API ja devolve a sessao: o professor entra direto, sem passar pelo login.
       salvarSessao({ token, usuario });
       router.replace('/');
     } catch (e) {

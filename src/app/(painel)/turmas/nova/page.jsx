@@ -27,7 +27,6 @@ export default function PaginaNovaTurma() {
         corpo: { nome, codigo, semestre },
       });
 
-      // A listagem recarrega os dados no proprio useEffect, entao basta navegar.
       router.push('/turmas');
     } catch (e) {
       tratarErro(e);

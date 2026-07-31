@@ -1,10 +1,7 @@
 import { prisma } from '@/lib/prisma';
 
-// CAMADA DE ACESSO A DADOS
-
 export const TurmaModel = {
-  // Turmas do professor, mais recentes primeiro. O _count evita carregar alunos
-  // e avaliacoes inteiros so para exibir a quantidade na listagem.
+  // _count evita carregar as colecoes so para exibir a quantidade.
   async listarPorProfessor(usuarioId) {
     return prisma.turma.findMany({
       where: { usuarioId },
@@ -20,12 +17,10 @@ export const TurmaModel = {
     });
   },
 
-  // Devolve a turma ou null quando o id nao existe.
   async buscarPorId(id) {
     return prisma.turma.findUnique({ where: { id } });
   },
 
-  // Turma com suas avaliacoes, para a tela de detalhe.
   async buscarDetalhadaPorId(id) {
     return prisma.turma.findUnique({
       where: { id },
@@ -36,8 +31,7 @@ export const TurmaModel = {
     });
   },
 
-  // Ids dos alunos matriculados na turma. Usado para garantir que os
-  // participantes de uma avaliacao pertencam aquela turma.
+  // Usado para garantir que os participantes pertencam a turma da avaliacao.
   async listarIdsDeAlunos(turmaId) {
     const alunos = await prisma.aluno.findMany({
       where: { turmas: { some: { id: turmaId } } },

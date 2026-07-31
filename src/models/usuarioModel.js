@@ -1,10 +1,7 @@
 import { prisma } from '@/lib/prisma';
 
-// CAMADA DE ACESSO A DADOS
-
 export const UsuarioModel = {
-  // Devolve o usuario completo (incluindo o hash da senha, necessario para a
-  // comparacao no login) ou null quando o e-mail nao existe.
+  // Inclui o hash da senha, necessario para a comparacao no login.
   async buscarPorEmail(email) {
     return prisma.usuario.findUnique({ where: { email } });
   },
@@ -16,8 +13,7 @@ export const UsuarioModel = {
     });
   },
 
-  // Recebe a senha JA com hash: gerar o hash e regra de negocio, nao acesso a
-  // dados. O select impede que o hash volte na resposta.
+  // A senha chega ja com hash; o select impede que ele volte na resposta.
   async criar({ nome, email, senha }) {
     return prisma.usuario.create({
       data: { nome, email, senha },

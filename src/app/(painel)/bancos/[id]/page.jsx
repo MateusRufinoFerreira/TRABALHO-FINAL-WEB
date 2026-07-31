@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { api } from '@/lib/api';
@@ -25,8 +25,13 @@ export default function PaginaBanco() {
   const [questoes, setQuestoes] = useState([]);
   const [bancoDestino, setBancoDestino] = useState(id);
   const [campos, setCampos] = useState(CAMPOS_INICIAIS);
+  // O formulario nasce oculto: a tela e para consultar as questoes do banco, e
+  // o cadastro e uma acao que o professor pede explicitamente.
+  const [mostrandoFormulario, setMostrandoFormulario] = useState(false);
   const [carregando, setCarregando] = useState(true);
   const [salvando, setSalvando] = useState(false);
+  // Usado para levar o foco ao primeiro campo quando o formulario abre.
+  const refEnunciado = useRef(null);
 
   useEffect(() => {
     let ativo = true;
@@ -61,6 +66,20 @@ export default function PaginaBanco() {
     setCampos((anteriores) => ({ ...anteriores, [nome]: valor }));
   }
 
+  function abrirFormulario() {
+    setErro(null);
+    setMostrandoFormulario(true);
+    // Sem o foco, o professor clica no botao e precisa clicar de novo para
+    // comecar a digitar. O timeout espera o campo existir no DOM.
+    setTimeout(() => refEnunciado.current?.focus(), 0);
+  }
+
+  function fecharFormulario() {
+    setMostrandoFormulario(false);
+    setCampos(CAMPOS_INICIAIS);
+    setBancoDestino(id);
+  }
+
   async function handleCriarQuestao(evento) {
     evento.preventDefault();
 
@@ -73,7 +92,11 @@ export default function PaginaBanco() {
         corpo: { ...campos, bancoId: bancoDestino },
       });
 
+      // Limpa os campos mas mantem o formulario aberto: cadastrar questoes de um
+      // banco costuma ser feito em sequencia, e fechar a cada salvamento
+      // obrigaria a reabrir para cada questao.
       setCampos(CAMPOS_INICIAIS);
+      refEnunciado.current?.focus();
 
       // Se o professor escolheu outro banco de destino, a questao nao pertence a
       // esta tela: navega para o banco que a recebeu, em vez de sumir com ela.
@@ -112,13 +135,26 @@ export default function PaginaBanco() {
 
     {banco && (
       <>
-        <header className="mt-1 mb-6">
-          <h1 className="text-2xl font-bold text-gray-800">{banco.titulo}</h1>
-          <p className="text-sm text-gray-600">
-            {questoes.length} {questoes.length === 1 ? 'questão' : 'questões'}
-          </p>
+        <header className="mt-1 mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-800">{banco.titulo}</h1>
+            <p className="text-sm text-gray-600">
+              {questoes.length} {questoes.length === 1 ? 'questão' : 'questões'}
+            </p>
+          </div>
+
+          {!mostrandoFormulario && (
+            <button
+              type="button"
+              onClick={abrirFormulario}
+              className="rounded-md bg-blue-600 px-4 py-2 font-medium text-white transition hover:bg-blue-700"
+            >
+              + Nova Questão
+            </button>
+          )}
         </header>
 
+        {mostrandoFormulario && (
         <form
           onSubmit={handleCriarQuestao}
           className="mb-8 rounded-lg bg-white p-6 shadow-sm"
@@ -167,6 +203,7 @@ export default function PaginaBanco() {
             </label>
             <textarea
               id="enunciado"
+              ref={refEnunciado}
               value={campos.enunciado}
               onChange={(e) => atualizarCampo('enunciado', e.target.value)}
               required
@@ -210,14 +247,25 @@ export default function PaginaBanco() {
             </div>
           </div>
 
-          <button
-            type="submit"
-            disabled={salvando}
-            className="mt-4 rounded-md bg-blue-600 px-4 py-2 font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300"
-          >
-            {salvando ? 'Salvando...' : 'Adicionar Questão'}
-          </button>
+          <div className="mt-4 flex flex-col gap-3 sm:flex-row">
+            <button
+              type="submit"
+              disabled={salvando}
+              className="rounded-md bg-blue-600 px-4 py-2 font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300"
+            >
+              {salvando ? 'Salvando...' : 'Adicionar Questão'}
+            </button>
+
+            <button
+              type="button"
+              onClick={fecharFormulario}
+              className="rounded-md border border-gray-300 px-4 py-2 font-medium text-gray-700 transition hover:bg-gray-50"
+            >
+              Cancelar
+            </button>
+          </div>
         </form>
+        )}
 
         <h2 className="mb-4 font-semibold text-gray-800">Questões deste banco</h2>
 
@@ -225,8 +273,18 @@ export default function PaginaBanco() {
           <div className="rounded-lg border border-dashed border-gray-300 bg-white p-10 text-center">
             <p className="font-medium text-gray-800">Nenhuma questão cadastrada.</p>
             <p className="mt-1 text-sm text-gray-600">
-              Use o formulário acima para adicionar a primeira.
+              Este banco ainda não tem questões.
             </p>
+
+            {!mostrandoFormulario && (
+              <button
+                type="button"
+                onClick={abrirFormulario}
+                className="mt-4 rounded-md bg-blue-600 px-4 py-2 font-medium text-white transition hover:bg-blue-700"
+              >
+                + Nova Questão
+              </button>
+            )}
           </div>
         ) : (
           <ol className="space-y-3">

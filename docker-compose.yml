@@ -3,8 +3,7 @@
 #   docker compose up -d      sobe o banco
 #   docker compose down       para o banco (preserva os dados)
 #   docker compose down -v    para o banco e apaga os dados
-#
-# As credenciais vem do .env, lido automaticamente pelo Docker Compose.
+
 
 services:
   db:
@@ -20,7 +19,6 @@ services:
     volumes:
       - provius-pgdata:/var/lib/postgresql/data
     healthcheck:
-      # Evita rodar migrations enquanto o Postgres ainda inicializa.
       test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}']
       interval: 5s
       timeout: 5s

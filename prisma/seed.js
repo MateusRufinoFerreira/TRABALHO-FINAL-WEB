@@ -15,9 +15,9 @@ const bcrypt = require('bcryptjs');
 const { PrismaClient } = require('@prisma/client');
 const { PrismaPg } = require('@prisma/adapter-pg');
 
-const NOME = process.env.SEED_PROFESSOR_NOME || 'Professor Provius';
-const EMAIL = (process.env.SEED_PROFESSOR_EMAIL || 'professor@uepb.edu.br').toLowerCase();
-const SENHA = process.env.SEED_PROFESSOR_SENHA || 'provius123';
+const NOME = process.env.SEED_PROFESSOR_NOME || 'Professor Thiago';
+const EMAIL = (process.env.SEED_PROFESSOR_EMAIL || 'thiago@uepb.edu.br').toLowerCase();
+const SENHA = process.env.SEED_PROFESSOR_SENHA || 'thiago123';
 
 // Custo do bcrypt. Cada incremento dobra o tempo de calculo, o que encarece
 // ataques de forca bruta sem impacto perceptivel num login legitimo.

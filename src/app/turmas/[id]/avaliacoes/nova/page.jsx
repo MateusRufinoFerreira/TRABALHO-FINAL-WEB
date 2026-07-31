@@ -28,6 +28,10 @@ export default function PaginaNovaAvaliacao() {
 
   const [turma, setTurma] = useState(null);
   const [alunos, setAlunos] = useState([]);
+  const [questoes, setQuestoes] = useState([]);
+  const [filtroBanco, setFiltroBanco] = useState('TODOS');
+  const [selecionadas, setSelecionadas] = useState(() => new Set());
+  const [ordemAleatoria, setOrdemAleatoria] = useState(false);
   const [campos, setCampos] = useState(CAMPOS_INICIAIS);
   // Set em vez de array: a checagem de "esta selecionado" acontece a cada
   // renderizacao, para cada aluno. Com Set e O(1); com array seria O(n).
@@ -49,14 +53,18 @@ export default function PaginaNovaAvaliacao() {
 
     async function carregar() {
       try {
-        const [dadosTurma, dadosAlunos] = await Promise.all([
+        const [dadosTurma, dadosAlunos, dadosQuestoes] = await Promise.all([
           api(`/api/turmas/${turmaId}`),
           api(`/api/turmas/${turmaId}/alunos`),
+          // Sem filtro de banco: a avaliacao pode combinar questoes de bancos
+          // diferentes, e o endpoint devolve o banco de origem de cada uma.
+          api('/api/questoes'),
         ]);
 
         if (!ativo) return;
         setTurma(dadosTurma);
         setAlunos(dadosAlunos);
+        setQuestoes(dadosQuestoes);
         // Por padrao a avaliacao e para a turma inteira: o caso comum nao exige
         // marcar aluno por aluno, e desmarcar excecoes e mais rapido.
         setParticipantes(new Set(dadosAlunos.map((aluno) => aluno.id)));
@@ -96,6 +104,18 @@ export default function PaginaNovaAvaliacao() {
     );
   }
 
+  function adicionarQuestao(questaoId) {
+    setSelecionadas((anteriores) => new Set(anteriores).add(questaoId));
+  }
+
+  function removerQuestao(questaoId) {
+    setSelecionadas((anteriores) => {
+      const proximo = new Set(anteriores);
+      proximo.delete(questaoId);
+      return proximo;
+    });
+  }
+
   async function handleSalvar(evento) {
     evento.preventDefault();
 
@@ -110,8 +130,10 @@ export default function PaginaNovaAvaliacao() {
           tipo: campos.tipo,
           dataInicio: paraIso(campos.dataInicio),
           dataTermino: paraIso(campos.dataTermino),
+          ordemAleatoria,
           turmaId,
           alunoIds: [...participantes],
+          questaoIds: [...selecionadas],
         },
       });
 
@@ -121,6 +143,20 @@ export default function PaginaNovaAvaliacao() {
       setSalvando(false);
     }
   }
+
+  // Valores derivados do estado: recalculados a cada renderizacao, sem estado
+  // duplicado que pudesse ficar dessincronizado.
+  const bancosDisponiveis = [...new Map(questoes.map((q) => [q.banco.id, q.banco])).values()];
+
+  const disponiveis = questoes.filter(
+    (q) => !selecionadas.has(q.id) && (filtroBanco === 'TODOS' || q.banco.id === filtroBanco)
+  );
+
+  // Mantem a ordem createdAt asc devolvida pelo servidor, que e a ordem em que a
+  // avaliacao sera efetivamente exibida quando a ordem for fixa.
+  const montadas = questoes.filter((q) => selecionadas.has(q.id));
+
+  const pesoTotal = montadas.reduce((soma, q) => soma + q.peso, 0);
 
   return (
     <main className="min-h-screen bg-gray-100 p-4 sm:p-8">
@@ -265,6 +301,136 @@ export default function PaginaNovaAvaliacao() {
                   ))}
                 </ul>
               )}
+            </section>
+
+            <section className="mt-8 border-t border-gray-200 pt-6">
+              <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+                <h2 className="font-semibold text-gray-800">
+                  Montagem da avaliação{' '}
+                  <span className="font-normal text-gray-500">
+                    ({montadas.length} {montadas.length === 1 ? 'questão' : 'questões'} • peso total{' '}
+                    {pesoTotal})
+                  </span>
+                </h2>
+
+                {bancosDisponiveis.length > 1 && (
+                  <select
+                    aria-label="Filtrar por banco"
+                    value={filtroBanco}
+                    onChange={(e) => setFiltroBanco(e.target.value)}
+                    className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-900 focus:border-blue-500 focus:outline-none"
+                  >
+                    <option value="TODOS">Todos os bancos</option>
+                    {bancosDisponiveis.map((banco) => (
+                      <option key={banco.id} value={banco.id}>
+                        {banco.titulo}
+                      </option>
+                    ))}
+                  </select>
+                )}
+              </div>
+
+              {questoes.length === 0 ? (
+                <p className="rounded-md border border-dashed border-gray-300 px-4 py-6 text-center text-sm text-gray-600">
+                  Nenhuma questão cadastrada.{' '}
+                  <Link href="/bancos" className="font-medium text-blue-600 hover:underline">
+                    Criar questões no banco
+                  </Link>
+                </p>
+              ) : (
+                <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                  <div>
+                    <h3 className="mb-2 text-sm font-medium text-gray-700">
+                      Disponíveis ({disponiveis.length})
+                    </h3>
+                    <ul
+                      data-lista="disponiveis"
+                      className="max-h-72 divide-y divide-gray-100 overflow-y-auto rounded-md border border-gray-200"
+                    >
+                      {disponiveis.length === 0 && (
+                        <li className="px-4 py-6 text-center text-sm text-gray-500">
+                          Nenhuma questão disponível neste filtro.
+                        </li>
+                      )}
+                      {disponiveis.map((questao) => (
+                        <li key={questao.id} className="flex items-start gap-3 px-4 py-3">
+                          <span className="flex-1">
+                            <span className="block text-sm text-gray-800">{questao.enunciado}</span>
+                            <span className="block text-xs text-gray-500">
+                              {questao.banco.titulo} • peso {questao.peso}
+                            </span>
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => adicionarQuestao(questao.id)}
+                            aria-label={`Adicionar: ${questao.enunciado}`}
+                            className="rounded-md border border-blue-200 px-2.5 py-1 text-sm font-medium text-blue-700 transition hover:bg-blue-50"
+                          >
+                            Adicionar
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <div>
+                    <h3 className="mb-2 text-sm font-medium text-gray-700">
+                      Nesta avaliação ({montadas.length})
+                    </h3>
+                    <ul
+                      data-lista="montadas"
+                      className="max-h-72 divide-y divide-gray-100 overflow-y-auto rounded-md border border-gray-200"
+                    >
+                      {montadas.length === 0 && (
+                        <li className="px-4 py-6 text-center text-sm text-gray-500">
+                          Adicione questões da lista ao lado.
+                        </li>
+                      )}
+                      {montadas.map((questao, indice) => (
+                        <li key={questao.id} className="flex items-start gap-3 px-4 py-3">
+                          <span className="flex-1">
+                            <span className="block text-sm text-gray-800">
+                              {indice + 1}. {questao.enunciado}
+                            </span>
+                            <span className="block text-xs text-gray-500">
+                              {questao.banco.titulo} • peso {questao.peso}
+                            </span>
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => removerQuestao(questao.id)}
+                            aria-label={`Remover: ${questao.enunciado}`}
+                            className="rounded-md border border-red-200 px-2.5 py-1 text-sm font-medium text-red-700 transition hover:bg-red-50"
+                          >
+                            Remover
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              )}
+
+              <div className="mt-6 rounded-md bg-gray-50 p-4">
+                <label className="flex cursor-pointer items-start gap-3">
+                  <input
+                    type="checkbox"
+                    checked={ordemAleatoria}
+                    onChange={(e) => setOrdemAleatoria(e.target.checked)}
+                    className="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  />
+                  <span>
+                    <span className="block text-sm font-medium text-gray-800">
+                      Embaralhar a ordem das questões
+                    </span>
+                    <span className="block text-xs text-gray-600">
+                      {ordemAleatoria
+                        ? 'Cada consulta à avaliação devolve as questões em ordem diferente.'
+                        : 'As questões seguem sempre a ordem exibida acima.'}
+                    </span>
+                  </span>
+                </label>
+              </div>
             </section>
 
             <div className="mt-6 flex flex-col gap-3 sm:flex-row">

@@ -11,6 +11,34 @@ function textoPreenchido(valor) {
 }
 
 export const AlunoController = {
+  // Consulta se a matricula ja pertence a algum aluno do sistema.
+  //
+  // Existe porque a matricula e unica globalmente: ao matricular alguem ja
+  // cadastrado, o registro e reaproveitado e o nome digitado e DESCARTADO. Sem
+  // esta consulta, o professor digitaria um nome e veria outro na lista, sem
+  // entender o motivo.
+  async consultarMatricula(matricula) {
+    if (!textoPreenchido(matricula)) {
+      return falha(ERRO.VALIDACAO, 'Informe a matricula a consultar.');
+    }
+
+    try {
+      const aluno = await AlunoModel.buscarPorMatricula(matricula.trim());
+
+      // Nao encontrar nao e erro: e a resposta esperada para uma matricula nova.
+      if (!aluno) return sucesso({ existe: false });
+
+      // Devolve apenas o necessario para preencher o formulario.
+      return sucesso({
+        existe: true,
+        aluno: { nome: aluno.nome, matricula: aluno.matricula, email: aluno.email },
+      });
+    } catch (erro) {
+      console.error('[consultarMatricula]', erro);
+      return falha(ERRO.INTERNO, 'Erro ao consultar a matricula.');
+    }
+  },
+
   async listarAlunosDaTurma(professorId, turmaId) {
     try {
       const acesso = await garantirTurmaDoProfessor(professorId, turmaId);

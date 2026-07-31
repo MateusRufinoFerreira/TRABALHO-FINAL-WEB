@@ -168,12 +168,34 @@ do token, para que ninguém crie turma no nome de outro professor.
 
 | Método | Rota | Protegida | Descrição | Status |
 |---|---|---|---|---|
+| `GET` | `/api/alunos?matricula=` | sim | verifica se a matrícula já está cadastrada | implementado |
 | `GET` | `/api/turmas/[id]/alunos` | sim | lista os alunos da turma | implementado |
 | `POST` | `/api/turmas/[id]/alunos` | sim | matricula um aluno na turma | implementado |
 | `DELETE` | `/api/turmas/[id]/alunos/[alunoId]` | sim | remove o aluno da turma | implementado |
 
-As rotas são aninhadas em `turmas` porque um aluno só é gerenciado no contexto de
-uma turma.
+As rotas de matrícula são aninhadas em `turmas` porque um aluno só é gerenciado no
+contexto de uma turma. A **consulta por matrícula** é a exceção: é global, porque a
+matrícula é única no sistema inteiro.
+
+### `GET /api/alunos?matricula=2026001`
+
+**Resposta `200`** quando encontra:
+
+```json
+{ "existe": true, "aluno": { "nome": "Maria Silva", "matricula": "2026001", "email": "maria@aluno.uepb.edu.br" } }
+```
+
+E quando não encontra — **200, não 404**, porque não encontrar é a resposta esperada
+para uma matrícula nova:
+
+```json
+{ "existe": false }
+```
+
+**Erros:** `400` parâmetro `matricula` ausente · `401`
+
+Serve para a tela avisar que a matrícula já existe: ao matricular alguém já
+cadastrado, o registro é **reaproveitado** e o nome digitado é descartado.
 
 ### `POST /api/turmas/[id]/alunos`
 

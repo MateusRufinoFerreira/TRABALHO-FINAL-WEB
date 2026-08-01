@@ -8,8 +8,8 @@ export async function POST(request) {
 
   if (!ok) return respostaJsonInvalido();
 
-  const resultado = await AuthController.autenticar(corpo);
-  const resposta = responder(resultado, 200);
+  const resultado = await AuthController.cadastrar(corpo);
+  const resposta = responder(resultado, 201);
 
   if (resultado.ok) {
     resposta.cookies.set('token', resultado.dados.token, {

@@ -1,4 +1,4 @@
-import { AvaliacaoController } from '@/controllers/avaliacaoController';
+import { TurmaController } from '@/controllers/turmaController';
 import { professorDaRequisicao } from '@/lib/autenticacao';
 import { lerCorpo, responder, respostaJsonInvalido, respostaNaoAutenticado } from '@/lib/http';
 
@@ -7,9 +7,7 @@ export async function GET(request) {
 
   if (!professor) return respostaNaoAutenticado();
 
-  const turmaId = request.nextUrl.searchParams.get('turmaId');
-
-  return responder(await AvaliacaoController.listarAvaliacoes(professor.id, { turmaId }));
+  return responder(await TurmaController.listarTurmas(professor.id));
 }
 
 export async function POST(request) {
@@ -21,7 +19,5 @@ export async function POST(request) {
 
   if (!ok) return respostaJsonInvalido();
 
-  const resultado = await AvaliacaoController.agendarAvaliacao(professor.id, corpo);
-
-  return responder(resultado, 201);
+  return responder(await TurmaController.criarTurma(professor.id, corpo), 201);
 }

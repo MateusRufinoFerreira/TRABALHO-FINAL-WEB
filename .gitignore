@@ -30,8 +30,13 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
+# env files
 .env*
+!.env.example
+
+# banco SQLite legado (o projeto usa PostgreSQL via docker-compose)
+dev.db
+dev.db-journal
 
 # vercel
 .vercel

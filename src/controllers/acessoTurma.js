@@ -8,7 +8,6 @@ export async function garantirTurmaDoProfessor(professorId, turmaId) {
 
   const turma = await TurmaModel.buscarPorId(turmaId);
 
-  // Inexistente e alheia respondem igual, para nao revelar quais ids existem.
   if (!turma || turma.usuarioId !== professorId) {
     return falha(ERRO.NAO_ENCONTRADO, 'Turma nao encontrada.');
   }

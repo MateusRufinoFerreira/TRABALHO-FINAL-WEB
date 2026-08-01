@@ -1,7 +1,3 @@
-# Os fallbacks ${VAR:-default} abaixo existem para que `docker compose up --build`
-# funcione sem exigir um .env configurado, na mesma lógica das credenciais padrão
-# do seed (prisma/seed.js) — conveniência de avaliação local, não uso em produção.
-
 services:
   db:
     image: postgres:17-alpine

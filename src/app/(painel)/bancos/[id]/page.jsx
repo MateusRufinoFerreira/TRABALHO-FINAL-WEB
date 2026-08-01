@@ -55,7 +55,6 @@ export default function PaginaBanco() {
     return () => {
       ativo = false;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, router]);
 
   function atualizarCampo(nome, valor) {
@@ -90,7 +89,7 @@ export default function PaginaBanco() {
       setCampos(CAMPOS_INICIAIS);
       refEnunciado.current?.focus();
 
-      // Destino diferente: navega para o banco que recebeu a questao.
+      // Navega para o banco que recebeu a questao.
       if (bancoDestino !== id) {
         router.push(`/bancos/${bancoDestino}`);
         return;

@@ -32,7 +32,6 @@ export default function PaginaBancos() {
     return () => {
       ativo = false;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tratarErro]);
 
   async function handleCriar(evento) {

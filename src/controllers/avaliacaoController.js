@@ -115,7 +115,6 @@ export const AvaliacaoController = {
         questaoIds: questoes,
       });
 
-      // A tabela de juncao implicita nao guarda posicao: a ordem sai na leitura.
       if (avaliacao.ordemAleatoria) {
         avaliacao.questoes = embaralhar(avaliacao.questoes);
       }

@@ -8,7 +8,6 @@ export async function garantirBancoDoProfessor(professorId, bancoId) {
 
   const banco = await BancoModel.buscarPorId(bancoId);
 
-  // Inexistente e alheio respondem igual, para nao revelar quais ids existem.
   if (!banco || banco.usuarioId !== professorId) {
     return falha(ERRO.NAO_ENCONTRADO, 'Banco de questoes nao encontrado.');
   }

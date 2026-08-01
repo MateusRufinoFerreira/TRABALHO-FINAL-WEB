@@ -11,7 +11,6 @@ const ITENS = [
   { rotulo: 'Banco de Questões', href: '/bancos' },
 ];
 
-// A raiz exige comparacao exata; as demais casam subrotas.
 function estaAtivo(pathname, href) {
   return href === '/' ? pathname === '/' : pathname.startsWith(href);
 }

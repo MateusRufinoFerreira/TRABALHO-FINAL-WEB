@@ -17,7 +17,6 @@ export const AlunoController = {
     try {
       const aluno = await AlunoModel.buscarPorMatricula(matricula.trim());
 
-      // Nao encontrar nao e erro: e a resposta esperada para uma matricula nova.
       if (!aluno) return sucesso({ existe: false });
 
       return sucesso({

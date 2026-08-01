@@ -156,12 +156,15 @@ export default function PaginaGerenciarAlunos() {
     )}
 
     <form onSubmit={handleMatricular} className="mt-6 rounded-lg bg-white p-6 shadow-sm" noValidate>
-      <h2 className="mb-4 font-semibold text-gray-800">Matricular aluno</h2>
+      <h2 className="mb-1 font-semibold text-gray-800">Matricular aluno</h2>
+      <p className="mb-4 text-xs text-gray-500">
+        Campos com <span className="text-red-500">*</span> são obrigatórios.
+      </p>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <div>
           <label htmlFor="matricula" className="mb-1 block text-sm font-medium text-gray-700">
-            Matrícula
+            Matrícula <span className="text-red-500">*</span>
           </label>
           <input
             id="matricula"
@@ -180,7 +183,7 @@ export default function PaginaGerenciarAlunos() {
 
         <div>
           <label htmlFor="nome" className="mb-1 block text-sm font-medium text-gray-700">
-            Nome
+            Nome <span className="text-red-500">*</span>
           </label>
           <input
             id="nome"
@@ -198,7 +201,7 @@ export default function PaginaGerenciarAlunos() {
 
         <div>
           <label htmlFor="email" className="mb-1 block text-sm font-medium text-gray-700">
-            E-mail
+            E-mail <span className="text-red-500">*</span>
           </label>
           <input
             id="email"

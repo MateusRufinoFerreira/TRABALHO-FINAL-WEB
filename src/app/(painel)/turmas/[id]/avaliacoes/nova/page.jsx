@@ -167,11 +167,14 @@ export default function PaginaNovaAvaliacao() {
 
     {turma && (
       <form onSubmit={handleSalvar} className="mt-6 rounded-lg bg-white p-6 shadow-sm" noValidate>
-        <h2 className="mb-4 font-semibold text-gray-800">Informações básicas</h2>
+        <h2 className="mb-1 font-semibold text-gray-800">Informações básicas</h2>
+        <p className="mb-4 text-xs text-gray-500">
+          Campos com <span className="text-red-500">*</span> são obrigatórios.
+        </p>
 
         <div className="mb-4">
           <label htmlFor="titulo" className="mb-1 block text-sm font-medium text-gray-700">
-            Título
+            Título <span className="text-red-500">*</span>
           </label>
           <input
             id="titulo"
@@ -202,7 +205,7 @@ export default function PaginaNovaAvaliacao() {
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
             <label htmlFor="dataInicio" className="mb-1 block text-sm font-medium text-gray-700">
-              Início
+              Início <span className="text-red-500">*</span>
             </label>
             <input
               id="dataInicio"
@@ -216,7 +219,7 @@ export default function PaginaNovaAvaliacao() {
 
           <div>
             <label htmlFor="dataTermino" className="mb-1 block text-sm font-medium text-gray-700">
-              Término
+              Término <span className="text-red-500">*</span>
             </label>
             <input
               id="dataTermino"

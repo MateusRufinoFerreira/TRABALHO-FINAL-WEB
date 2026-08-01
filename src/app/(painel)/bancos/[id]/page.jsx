@@ -151,7 +151,10 @@ export default function PaginaBanco() {
           className="mb-8 rounded-lg bg-white p-6 shadow-sm"
           noValidate
         >
-          <h2 className="mb-4 font-semibold text-gray-800">Nova Questão</h2>
+          <h2 className="mb-1 font-semibold text-gray-800">Nova Questão</h2>
+          <p className="mb-4 text-xs text-gray-500">
+            Campos com <span className="text-red-500">*</span> são obrigatórios.
+          </p>
 
           <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
@@ -190,7 +193,7 @@ export default function PaginaBanco() {
 
           <div className="mb-4">
             <label htmlFor="enunciado" className="mb-1 block text-sm font-medium text-gray-700">
-              Enunciado
+              Enunciado <span className="text-red-500">*</span>
             </label>
             <textarea
               id="enunciado"
@@ -222,7 +225,7 @@ export default function PaginaBanco() {
 
             <div className="sm:col-span-3">
               <label htmlFor="gabarito" className="mb-1 block text-sm font-medium text-gray-700">
-                {multiplaEscolha ? 'Alternativa correta' : 'Gabarito'}
+                {multiplaEscolha ? 'Alternativa correta' : 'Gabarito'} <span className="text-red-500">*</span>
               </label>
               <input
                 id="gabarito"

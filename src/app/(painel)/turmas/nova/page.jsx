@@ -41,6 +41,9 @@ export default function PaginaNovaTurma() {
         ← Minhas Turmas
       </Link>
       <h1 className="mt-1 text-2xl font-bold text-gray-800">Criar Nova Turma</h1>
+      <p className="mt-2 text-xs text-gray-500">
+        Campos com <span className="text-red-500">*</span> são obrigatórios.
+      </p>
     </header>
 
     <form onSubmit={handleSalvar} className="rounded-lg bg-white p-6 shadow-sm sm:p-8" noValidate>
@@ -55,7 +58,7 @@ export default function PaginaNovaTurma() {
 
       <div className="mb-4">
         <label htmlFor="nome" className="mb-1 block text-sm font-medium text-gray-700">
-          Nome da disciplina
+          Nome da disciplina <span className="text-red-500">*</span>
         </label>
         <input
           id="nome"
@@ -71,7 +74,7 @@ export default function PaginaNovaTurma() {
       <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div>
           <label htmlFor="codigo" className="mb-1 block text-sm font-medium text-gray-700">
-            Código
+            Código <span className="text-red-500">*</span>
           </label>
           <input
             id="codigo"
@@ -86,7 +89,7 @@ export default function PaginaNovaTurma() {
 
         <div>
           <label htmlFor="semestre" className="mb-1 block text-sm font-medium text-gray-700">
-            Semestre
+            Semestre <span className="text-red-500">*</span>
           </label>
           <input
             id="semestre"

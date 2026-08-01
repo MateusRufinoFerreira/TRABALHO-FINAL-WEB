@@ -52,7 +52,10 @@ export default function PaginaLogin() {
           className="rounded-lg bg-white p-6 shadow-xl sm:p-8"
           noValidate
         >
-          <h2 className="mb-6 text-xl font-semibold text-gray-800">Acessar o sistema</h2>
+          <h2 className="mb-1 text-xl font-semibold text-gray-800">Acessar o sistema</h2>
+          <p className="mb-6 text-xs text-gray-500">
+            Campos com <span className="text-red-500">*</span> são obrigatórios.
+          </p>
 
           {erro && (
             <p
@@ -65,7 +68,7 @@ export default function PaginaLogin() {
 
           <div className="mb-4">
             <label htmlFor="email" className="mb-1 block text-sm font-medium text-gray-700">
-              E-mail
+              E-mail <span className="text-red-500">*</span>
             </label>
             <input
               id="email"
@@ -81,7 +84,7 @@ export default function PaginaLogin() {
 
           <div className="mb-6">
             <label htmlFor="senha" className="mb-1 block text-sm font-medium text-gray-700">
-              Senha
+              Senha <span className="text-red-500">*</span>
             </label>
             <input
               id="senha"

@@ -78,12 +78,15 @@ export default function PaginaBancos() {
     )}
 
     <form onSubmit={handleCriar} className="mb-8 rounded-lg bg-white p-6 shadow-sm" noValidate>
-      <h2 className="mb-4 font-semibold text-gray-800">Novo Banco</h2>
+      <h2 className="mb-1 font-semibold text-gray-800">Novo Banco</h2>
+      <p className="mb-4 text-xs text-gray-500">
+        Campos com <span className="text-red-500">*</span> são obrigatórios.
+      </p>
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
         <div className="flex-1">
           <label htmlFor="titulo" className="mb-1 block text-sm font-medium text-gray-700">
-            Título
+            Título <span className="text-red-500">*</span>
           </label>
           <input
             id="titulo"

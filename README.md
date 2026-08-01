@@ -1,36 +1,99 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Provius
 
-## Getting Started
+Plataforma web para professores universitários gerenciarem turmas, alunos, bancos
+de questões e avaliações (provas e listas de exercícios). Trabalho final da
+disciplina de Programação Web — UEPB.
 
-First, run the development server:
+## Stack
+
+| Camada | Tecnologia |
+|---|---|
+| Framework | Next.js 16.2 (App Router, Turbopack) |
+| Interface | React 19.2 + Tailwind CSS v4 |
+| Banco de dados | PostgreSQL 17 |
+| ORM | Prisma 7.9 + `@prisma/adapter-pg` |
+| Autenticação | JWT (`jsonwebtoken`) + `bcryptjs` |
+| Runtime | Node.js 22 |
+
+Arquitetura em camadas: `src/app/api/**/route.js` (HTTP) → `src/controllers/`
+(validação e regras de negócio) → `src/models/` (Prisma). Detalhes das decisões
+técnicas e divergências em relação ao enunciado estão documentados em
+[`docs/MER.md`](docs/MER.md) e [`docs/ENDPOINTS.md`](docs/ENDPOINTS.md).
+
+## Como rodar
+
+### Opção 1 — Docker Compose (recomendado)
+
+Sobe o banco, aplica as migrations, roda o seed e inicia a aplicação — sem precisar
+instalar Node ou Postgres localmente.
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+docker compose up --build
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Acesse `http://localhost:3000`. Credenciais do professor de teste (seed):
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+- **E-mail:** `thiago@uepb.edu.br`
+- **Senha:** `thiago123`
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Esses valores (e a `JWT_SECRET`/senha do banco) têm fallback padrão em
+`docker-compose.yml` só para facilitar a avaliação local; personalize-os criando um
+`.env` na raiz (ver `.env.example`) antes de subir o compose.
 
-## Learn More
+Para derrubar tudo: `docker compose down` (adicione `-v` para apagar os dados).
 
-To learn more about Next.js, take a look at the following resources:
+### Opção 2 — Local, sem Docker
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Requer Node.js ≥ 20.19 e um PostgreSQL acessível.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+cp .env.example .env        # ajuste DATABASE_URL e JWT_SECRET
+npm install                 # roda "prisma generate" no postinstall
+npm run db:migrate          # aplica as migrations
+npm run seed                # cria o professor de teste
+npm run dev
+```
 
-## Deploy on Vercel
+## Scripts
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+| Comando | Faz |
+|---|---|
+| `npm run dev` | sobe o servidor de desenvolvimento |
+| `npm run build` / `npm run start` | build e execução em produção |
+| `npm run db:migrate` | `prisma migrate dev` |
+| `npm run db:studio` | abre o Prisma Studio |
+| `npm run seed` | popula o professor inicial (`prisma/seed.js`) |
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Estrutura
+
+```
+src/
+  app/
+    (painel)/        páginas autenticadas (dashboard, turmas, bancos)
+    login/, cadastro/ páginas públicas
+    api/              rotas HTTP finas (sem regra de negócio nem Prisma)
+  controllers/        validação e regras de negócio
+  models/             acesso a dados via Prisma
+  lib/                jwt, sessão, cliente de API, helpers HTTP
+  components/         Sidebar, saudação etc.
+  proxy.js            middleware de autenticação (JWT via header e cookie)
+prisma/
+  schema.prisma        modelo de dados
+  migrations/           histórico de migrations
+  seed.js                seed do professor de teste
+docs/
+  MER.md                modelo entidade-relacionamento e decisões de modelagem
+  ENDPOINTS.md           contrato completo da API
+```
+
+## Funcionalidades
+
+- Autenticação por JWT (cadastro e login de professores), com proteção de rotas de
+  API e de páginas via `src/proxy.js`.
+- Gerenciamento de turmas e matrícula de alunos (matrícula única globalmente).
+- Bancos de questões reaproveitáveis entre avaliações (discursivas e múltipla
+  escolha).
+- Criação de avaliações (provas/listas) com seleção de participantes, montagem de
+  questões e ordem fixa ou aleatória (embaralhamento Fisher-Yates no backend).
+- Dashboard com indicadores em tempo real (alunos ativos, avaliações, turmas
+  recentes).
